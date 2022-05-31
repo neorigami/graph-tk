@@ -34,12 +34,6 @@ def check_zero_division(string):
 #         print('hui')
 #     print('norm')
 
-def check_x_with_brackets(string):
-    for m in re.findall(r'\(?x\)?', string):
-        if m != '(x)':
-            return False
-    return True
-
 
 class Graph:
     def __init__(self, func, type_func, type_graph, first_point=0, last_point=10, step=1):
@@ -61,11 +55,10 @@ class Graph:
                 self.error = "Input function error. Function without 'x'"
                 raise self.func_error()
             self.func = str(func)
-        if not check_x_with_brackets(self.func):
-            self.error = "Input error. Variable without brackets"
-            raise self.func_error()
         if '^' in func:
             self.func = self.func.replace('^', '**')
+        self.func = self.func.replace('(x)', 'x')
+        self.func = self.func.replace('x', '(x)')
         if (self.last_point < self.first_point and step > 0) or self.step == 0:
             self.error = 'Step error. Impossible to build graph '
             raise self.func_error()
@@ -79,9 +72,6 @@ class Graph:
         else:
             self.presicion = 2
         # For analysis acceptable x (for log(ax**2+bx+c, e)
-
-
-
 
         if re.search(r'log', self.func):
             for m in re.findall(r'log\(.*?\(x\)[+-]?\d*\.?\d*, ?[0-9e]+\)+', self.func):
@@ -121,10 +111,6 @@ class Graph:
                         l_n.append(eval(m[4:m.find(',')].replace('x', str(m_i))) > 0)
                 d_l_n = {k: v for k, v in zip(n, l_n[:-1])}
                 self.n, self.l_n, self.d_l_n = n, l_n, d_l_n
-
-
-
-
             array_delta = [abs(n[i]-n[i+1]) for i in range(len(n)-1)]
             if all(list(filter(lambda x: self.step > x, array_delta))):
                 self.error = "Big step. Try smaller"
@@ -161,9 +147,6 @@ class Graph:
     #         print(abs(n / pi - n // pi))
     #     return all(l_m)
 
-
-
-
     def analysis_log_x(self, x):
         if len(self.n) == 0:
             if not self.l_n[0]:
@@ -181,25 +164,41 @@ class Graph:
                 return 'False'
         return x
 
-
-
-
     def analysis_data(self, func: str):
         n_all = []
-        for m in re.findall(r'/ ?\([+-]?.*?\(x\)[+-]?\d*\.?\d*\)+', func):
+        for m in re.findall(r'/ ?\([+-]?.*?\(x\).*?[+-]?\d*\.?\d*\)+\)?', self.func):
+            print(m)
             n = []
-            for m2 in re.findall(r'[+-]?\d+\.?\d*\*\(x\)', m):
-                n.append(m2[:m2.find('*')])
-            if re.search(r'\)[+-]?\d*\.?\d*\)', m):
-                m2 = re.search(r'\)[+-]?\d*\.?\d*\)', m)
-                if m2.group(0) != '))':
-                    n.append(m2.group(0)[1:-1])
+            if re.search(r'\*\*\d', m):
+                x_power_max = int(re.search(r'\*\*\d', m).group(0)[2:])
+                flag = x_power_max
+                for m2 in re.findall(r'[+-]?\d+\.?\d*\*\(x\)\*\*\d', m):
+                    flag_new = int(re.search(r'\*\*\d', m2).group(0)[2:])
+                    while flag != flag_new:
+                        n.append(0)
+                        flag -= 1
+                    n.append(m2[:m2.find('*')])
+                    flag -= 1
+                while len(n) != x_power_max - 1:
+                    n.append(0)
+                if re.search(r'\d[+-]\d+\.?\d*\*\(x\)[^*]?.*?\)', m):
+                    # num_x = re.search(r'[+-]?\d+\.?\d*\*\(x\)[^*]', m).group(0)
+                    num_x = re.search(r'\d[+-]\d+\.?\d*\*\(x\)[^*]?.*?\)', m).group(0)
+                    n.append(num_x[1:num_x.find('*')])
                 else:
                     n.append(0)
+            else:
+                num_x = re.search(r'[+-]?\d+\.?\d*\*\(x\)', m).group(0)
+                n.append(num_x[:num_x.find('*')])
+            if re.search(r'\)?\d?[+-]?\d+\.?\d*\)', m):
+                m2 = re.search(r'\)?\d?[+-]?\d+\.?\d*\)', m)
+                n.append(m2.group(0)[1:-1])
+            else:
+                n.append(0)
             n = [float(i) for i in n]
             n = np.roots(n)
             n_all.extend(n)
-
+        print(n_all)
         n_all = list(set(n_all))
         n_all = [round(i, self.presicion) for i in n_all if not isinstance(i, complex)]
         return n_all
