@@ -147,40 +147,6 @@ class Graph:
             self.graph_func.ylabel("x")
         # self.graph_func.grid(axis='both')
 
-    # def analysis_tan_x(self):
-    #     range_x = []
-    #     x = self.first_point
-    #     while x < self.last_point:
-    #         range_x.append(x)
-    #         x += self.step / 10
-    #     calculate_tan = []
-    #     for m in re.findall(r'tan\([+-]?.*?\(x\)[+-]?\d*\.?\d*\)+\)?', self.func):
-    #         for i in range_x:
-    #             tan_value = eval(m.replace('x', str(i)))
-    #             calculate_tan.append((tan_value, i))
-    #     gap_point = []
-    #     for i in range(len(calculate_tan) - 1):
-    #         if calculate_tan[i][0] > 0 and calculate_tan[i + 1][0] < 0:
-    #             gap_point.append((round(calculate_tan[i+1][1], self.presicion), round(calculate_tan[i][1], self.presicion)))
-    #     return gap_point
-
-    # def analysis_ctg_x(self):
-    #     range_x = []
-    #     x = self.first_point
-    #     while x < self.last_point:
-    #         range_x.append(x)
-    #         x += self.step / 10
-    #     calculate_tan = []
-    #     for m in re.findall(r'ctg\([+-]?.*?\(x\)[+-]?\d*\.?\d*\)+\)?', self.func):
-    #         for i in range_x:
-    #             ctg_value = eval(m.replace('x', str(i)))
-    #             calculate_tan.append((ctg_value, i))
-    #     gap_point = []
-    #     for i in range(len(calculate_tan) - 1):
-    #         if calculate_tan[i][0] < 0 and calculate_tan[i + 1][0] > 0:
-    #             gap_point.append((round(calculate_tan[i+1][1], self.presicion), round(calculate_tan[i][1], self.presicion)))
-    #     return gap_point
-
     def analysis_log_x(self, x):
         if not self.critical_points:
             return False
@@ -217,7 +183,6 @@ class Graph:
                 while len(gap_points) != x_power_max - 1:
                     gap_points.append(0)
                 if re.search(r'\d[+-]\d+\.?\d*\*\(x\)[^*]?.*?\)', m):
-                    # num_x = re.search(r'[+-]?\d+\.?\d*\*\(x\)[^*]', m).group(0)
                     num_x = re.search(r'\d[+-]\d+\.?\d*\*\(x\)[^*]?.*?\)', m).group(0)
                     gap_points.append(num_x[1:num_x.find('*')])
                 else:
@@ -276,18 +241,6 @@ class Graph:
         return gap_all
 
     def calculate_func(self, func: str, x1: float, xn: float, step: float):
-        # if 'tan' in self.func:
-        #     period_point_tan = 0
-        #     gap_point_tan = self.analysis_tan_x()
-        # else:
-        #     period_point_tan = 0
-        #     gap_point_tan = [(xn, xn)]
-        # if 'ctg' in self.func:
-        #     period_point_ctg = 0
-        #     gap_point_ctg = self.analysis_ctg_x()
-        # else:
-        #     period_point_ctg = 0
-        #     gap_point_ctg = [(xn, xn)]
 
         if re.findall(r'/ ?\(.*?\(x\)[+-]?\d*\.?\d*\)+', func)\
                 or '/sin' in func or '/cos' in func:
@@ -315,36 +268,6 @@ class Graph:
                             self.y = []
 
                         x = self.analysis_log_x(x)
-
-                # if period_point_tan != len(gap_point_tan) and x >= gap_point_tan[period_point_tan][0]:
-                #     x = gap_point_tan[period_point_tan][1]
-                #     y = func.replace('x', str(x))
-                #     self.x.append(x)
-                #     self.y.append(eval(y))
-                #     if self.type_graph == 'scatter':
-                #         self.scatter()
-                #     elif self.type_graph == 'line':
-                #         self.line()
-                #     x = gap_point_tan[period_point_tan][0]
-                #     period_point_tan += 1
-                #     self.x = []
-                #     self.y = []
-                #     continue
-                #
-                # if period_point_ctg != len(gap_point_ctg) and x >= gap_point_ctg[period_point_ctg][0]:
-                #     x = gap_point_ctg[period_point_ctg][1]
-                #     y = func.replace('x', str(x))
-                #     self.x.append(x)
-                #     self.y.append(eval(y))
-                #     if self.type_graph == 'scatter':
-                #         self.scatter()
-                #     elif self.type_graph == 'line':
-                #         self.line()
-                #     x = gap_point_ctg[period_point_ctg][0]
-                #     period_point_ctg += 1
-                #     self.x = []
-                #     self.y = []
-                #     continue
 
                 if critical_point and point < len(critical_point) and x >= critical_point[point]:
                     point += 1
@@ -383,36 +306,6 @@ class Graph:
                             self.x = []
                             self.y = []
                         x = self.analysis_log_x(x)
-
-                # if period_point_tan != len(gap_point_tan) and x >= gap_point_tan[period_point_tan][0]:
-                #     x = gap_point_tan[period_point_tan][1]
-                #     y = func.replace('x', str(x))
-                #     self.x.append(x)
-                #     self.y.append(eval(y))
-                #     if self.type_graph == 'scatter':
-                #         self.scatter()
-                #     elif self.type_graph == 'line':
-                #         self.line()
-                #     x = gap_point_tan[period_point_tan][0]
-                #     period_point_tan += 1
-                #     self.x = []
-                #     self.y = []
-                #     continue
-                #
-                # if period_point_ctg != len(gap_point_ctg) and x >= gap_point_ctg[period_point_ctg][0]:
-                #     x = gap_point_ctg[period_point_ctg][1]
-                #     y = func.replace('x', str(x))
-                #     self.x.append(x)
-                #     self.y.append(eval(y))
-                #     if self.type_graph == 'scatter':
-                #         self.scatter()
-                #     elif self.type_graph == 'line':
-                #         self.line()
-                #     x = gap_point_ctg[period_point_ctg][0]
-                #     period_point_tan += 1
-                #     self.x = []
-                #     self.y = []
-                #     continue
 
                 y = func.replace('x', str(x))
                 self.x.append(x)
