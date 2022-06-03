@@ -67,76 +67,86 @@ def analysis(func_entry, window, group_type_func, group_type_graph, entry_first_
 
     str_rise = ''
     str_fall = ''
+    if len(dictionary_cryt_point) > 0:
+        for k in sorted(dictionary_cryt_point.keys())[:-1]:
+            if k == min(dictionary_cryt_point.keys()):
+                if not dictionary_cryt_point[k][2]:
+                    if dictionary_cryt_point[k][0]:
+                        str_rise += f'(-∞; {k}) & ({k}; '
+                    else:
+                        str_fall += f'(-∞; {k}) & ({k}; '
+                else:
+                    if dictionary_cryt_point[k][0]:
+                        str_rise += f'(-∞; {k}] & '
+                        str_fall += f'[{k}; '
+                    else:
+                        str_fall += f'(-∞; {k}] & '
+                        str_rise += f'[{k}; '
+            else:
+                if not dictionary_cryt_point[k][2]:
+                    if dictionary_cryt_point[k][0]:
+                        str_rise += f'{k}) & ({k}; '
+                    else:
+                        str_fall += f'{k}) & ({k}; '
+                else:
+                    if dictionary_cryt_point[k][0]:
+                        str_rise += f'[{k}; '
+                        str_fall += f'{k}] & '
+                    else:
+                        str_fall += f'[{k}; '
+                        str_rise += f'{k}] & '
 
-    for k in sorted(dictionary_cryt_point.keys())[:-1]:
-        if k == min(dictionary_cryt_point.keys()):
-            if not dictionary_cryt_point[k][2]:
-                if dictionary_cryt_point[k][0]:
-                    str_rise += f'(-∞; {k}) & ({k}; '
+        last_point = sorted(dictionary_cryt_point.keys())[-1]
+        if len(dictionary_cryt_point.keys()) == 1:
+            if not dictionary_cryt_point[last_point][2]:
+                if dictionary_cryt_point[last_point][0]:
+                    str_rise += f'(-∞; {last_point}) & ({last_point}; +∞)'
                 else:
-                    str_fall += f'(-∞; {k}) & ({k}; '
+                    str_fall += f'(-∞; {last_point}) & ({last_point}; +∞)'
             else:
-                if dictionary_cryt_point[k][0]:
-                    str_rise += f'(-∞; {k}] & '
-                    str_fall += f'[{k}; '
+                if dictionary_cryt_point[last_point][0]:
+                    str_rise += f'(-∞; {last_point}]'
+                    str_fall += f'[{last_point}; +∞)'
                 else:
-                    str_fall += f'(-∞; {k}] & '
-                    str_rise += f'[{k}; '
+                    str_fall += f'(-∞; {last_point}]'
+                    str_rise += f'[{last_point}; +∞)'
         else:
-            if not dictionary_cryt_point[k][2]:
-                if dictionary_cryt_point[k][0]:
-                    str_rise += f'{k}) & ({k}; '
+            if not dictionary_cryt_point[last_point][2]:
+                if dictionary_cryt_point[last_point][0]:
+                    str_rise += f'{last_point}) & ({last_point}; +∞)'
+                    # str_fall.rstrip(' & ')
+                    str_fall = str_fall[:-3]
                 else:
-                    str_fall += f'{k}) & ({k}; '
+                    str_fall += f'{last_point}) & ({last_point}; +∞)'
+                    # str_rise.rstrip(' & ')
+                    str_rise = str_rise[:-3]
             else:
-                if dictionary_cryt_point[k][0]:
-                    str_rise += f'[{k}; '
-                    str_fall += f'{k}] & '
-                else:
-                    str_fall += f'[{k}; '
-                    str_rise += f'{k}] & '
+                if dictionary_cryt_point[last_point][0]:
 
-    last_point = sorted(dictionary_cryt_point.keys())[-1]
-    if len(dictionary_cryt_point.keys()) == 1:
-        if not dictionary_cryt_point[last_point][2]:
-            if dictionary_cryt_point[last_point][0]:
-                str_rise += f'(-∞; {last_point}) & ({last_point}; '
-            else:
-                str_fall += f'(-∞; {last_point}) & ({last_point}; '
-        else:
-            if dictionary_cryt_point[last_point][0]:
-                str_rise += f'(-∞; {last_point}] & '
-                str_fall += f'[{last_point}; '
-            else:
-                str_fall += f'(-∞; {last_point}] & '
-                str_rise += f'[{last_point}; '
-    if not dictionary_cryt_point[last_point][2]:
-        if dictionary_cryt_point[last_point][0]:
-            str_rise += f'{last_point}) & ({last_point}; +∞)'
-            # str_fall.rstrip(' & ')
-            str_fall = str_fall[:-3]
-        else:
-            str_fall += f'{last_point}) & ({last_point}; +∞)'
-            # str_rise.rstrip(' & ')
-            str_rise = str_rise[:-3]
-    else:
-        if dictionary_cryt_point[last_point][0]:
-            str_rise += f'{last_point}]'
-            # str_fall.rstrip(' & ')
-            str_fall += f'[{last_point}; +∞)'
-        else:
-            str_fall += f'{last_point}]'
-            # str_rise.rstrip(' & ')
-            str_rise += f'[{last_point}; +∞)'
+                    str_rise += f'{last_point}]'
+                    # str_fall.rstrip(' & ')
+                    str_fall += f'[{last_point}; +∞)'
+                else:
+                    # str_fall = str_fall[:-3]
+                    str_fall += f'{last_point}]'
+                    # str_rise.rstrip(' & ')
+                    str_rise += f'[{last_point}; +∞)'
 
-    intervals_points_concave_convex = sorted(intervals_points_concave_convex)
     intervals_concave_convex = []
-    for i in intervals_points_concave_convex:
-        i_l = eval(str(fprimeprime).replace('x', str(i - 0.001)))
-        i_r = eval(str(fprimeprime).replace('x', str(i + 0.001)))
+    if isinstance(intervals_points_concave_convex, list):
+        intervals_points_concave_convex = sorted(intervals_points_concave_convex)
+        for i in intervals_points_concave_convex:
+            i_l = eval(str(fprimeprime).replace('x', str(i - 0.001)))
+            i_r = eval(str(fprimeprime).replace('x', str(i + 0.001)))
+            intervals_concave_convex.append([i_l >= 0, i_r >= 0])
+        dictionary_inflection_point = {k: v for k, v in zip(intervals_points_concave_convex, intervals_concave_convex)}
+    else:
+        i_l = eval(str(fprimeprime).replace('x', str(intervals_points_concave_convex - 0.001)))
+        i_r = eval(str(fprimeprime).replace('x', str(intervals_points_concave_convex + 0.001)))
         intervals_concave_convex.append([i_l >= 0, i_r >= 0])
+        dictionary_inflection_point = {intervals_points_concave_convex: intervals_concave_convex[0]}
 
-    dictionary_inflection_point = {k: v for k, v in zip(intervals_points_concave_convex, intervals_concave_convex)}
+    # dictionary_inflection_point = {k: v for k, v in zip(intervals_points_concave_convex, intervals_concave_convex)}
     for k in dictionary_inflection_point:
         if '/' in func and k in indefinite_points:
             dictionary_inflection_point[k].append(False)
@@ -215,38 +225,53 @@ def analysis(func_entry, window, group_type_func, group_type_graph, entry_first_
 
     analysis_window = tk.Tk()
     analysis_window.title('Analysis')
+    analysis_window.minsize(width=300, height=100)
+    # analysis_window.geometry('300x200')
     analysis_window.resizable(width=False, height=False)
     lbl_first_prime = tk.Label(master=analysis_window, text=f'Перша похідна: y\'(x)={fprime}')
     lbl_second_prime = tk.Label(master=analysis_window, text=f'Друга похідна: y\'\'(x)={fprimeprime}')
     if '/' in func:
         lbl_indefinite_points = tk.Label(master=analysis_window,
                                          text=f'Точки невизначеності функції: {indefinite_points_out}')
-    lbl_crytical_point = tk.Label(master=analysis_window, text=f'Критичні точки: {cryt_points_out}')
-    lbl_intervals_rise_fall = tk.Label(master=analysis_window, text=f'При х є {str_rise} функція зростає\n'
-                                                                    f'При х є {str_fall} функція спадає')  # intervals_point_rise_fall
+    else:
+        lbl_indefinite_points = tk.Label(master=analysis_window,
+                                         text=f'Точки невизначеності функції: x є R')
+    if len(cryt_points_out) == 0:
+        lbl_crytical_point = tk.Label(master=analysis_window, text=f'Критичні точки: відсутні')
+        if ('x' in str(fprime) and eval(fprime.replace('x', 0)) >= 0) or fprime >= 0:
+            lbl_intervals_rise_fall = tk.Label(master=analysis_window, text=f'При х є R функція зростає\n')
+        else:
+            lbl_intervals_rise_fall = tk.Label(master=analysis_window, text=f'При х є R функція спадає\n')
+    else:
+        lbl_crytical_point = tk.Label(master=analysis_window, text=f'Критичні точки: {cryt_points_out}')
+        lbl_intervals_rise_fall = tk.Label(master=analysis_window, text=f'При х є {str_rise} функція зростає\n'
+                                                                        f'При х є {str_fall} функція спадає')  # intervals_point_rise_fall
     lbl_intervals_points_up_down = tk.Label(master=analysis_window,
                                             text=f'Точки перегину кривої: {intervals_points_concave_convex}')  # intervals_points_up_down
     lbl_intervals_up_down = tk.Label(master=analysis_window, text=f'При х є {str_concave} функція опукла\n'
                                                                   f'При х є {str_convex} функція увігнута')  # intervals_up_down
     lbl_first_prime.pack()
     lbl_second_prime.pack()
-    if '/' in func or 'tan' in func or 'ctg' in func:
-        lbl_indefinite_points.pack()
+    lbl_indefinite_points.pack()
     lbl_crytical_point.pack()
     lbl_intervals_rise_fall.pack()
     lbl_intervals_points_up_down.pack()
     lbl_intervals_up_down.pack()
     # Recommendation to build
-    recommend_first_point = sorted(cryt_points)[0] - 1
-    recommend_last_point = sorted(cryt_points)[-1] + 1
-    analysis_step_array = [cryt_points[i + 1] - cryt_points[i] for i in range(len(cryt_points) - 1)]
-    recommend_step = round((sum(analysis_step_array) / len(analysis_step_array) / 5), 5)
-    global lbl_flag, lbl_recommend_first_point, lbl_recommend_last_point, lbl_recommend_step
-    lbl_recommend_first_point = tk.Label(master=window, text=f'Рекомендована перша точка: {recommend_first_point}')
-    lbl_recommend_last_point = tk.Label(master=window, text=f'Рекомендована остання точка: {recommend_last_point}')
-    lbl_recommend_step = tk.Label(master=window, text=f'Рекомендований крок побудови: {recommend_step}')
-    lbl_recommend_first_point.grid(row=10, column=1, pady=2, sticky='e')
-    lbl_recommend_last_point.grid(row=11, column=1, pady=2, sticky='e')
-    lbl_recommend_step.grid(row=12, column=1, pady=2, sticky='e')
-    lbl_flag = True
+    if cryt_points:
+        recommend_first_point = sorted(cryt_points)[0] - 1
+        recommend_last_point = sorted(cryt_points)[-1] + 1
+        if len(cryt_points) > 1:
+            analysis_step_array = [cryt_points[i + 1] - cryt_points[i] for i in range(len(cryt_points) - 1)]
+            recommend_step = round((sum(analysis_step_array) / len(analysis_step_array) / 5), 5)
+        else:
+            recommend_step = 0.5
+        global lbl_flag, lbl_recommend_first_point, lbl_recommend_last_point, lbl_recommend_step
+        lbl_recommend_first_point = tk.Label(master=window, text=f'Рекомендована перша точка: {recommend_first_point}')
+        lbl_recommend_last_point = tk.Label(master=window, text=f'Рекомендована остання точка: {recommend_last_point}')
+        lbl_recommend_step = tk.Label(master=window, text=f'Рекомендований крок побудови: {recommend_step}')
+        lbl_recommend_first_point.grid(row=10, column=1, pady=2, sticky='e')
+        lbl_recommend_last_point.grid(row=11, column=1, pady=2, sticky='e')
+        lbl_recommend_step.grid(row=12, column=1, pady=2, sticky='e')
+        lbl_flag = True
 
