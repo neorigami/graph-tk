@@ -1,11 +1,12 @@
-# import re
-# from math import *
-# import numpy as np
+import re
+from math import *
+import numpy as np
 import sympy
+from sympy import *
 import graph
 import tkinter as tk
 import tkinter.messagebox as MessageBox
-
+sympy.init_printing(use_unicode=True)
 
 def analysis(func_entry, window, group_type_func, group_type_graph, entry_first_point, entry_last_point, entry_step):
     group_type_func = "x_y"
@@ -29,12 +30,13 @@ def analysis(func_entry, window, group_type_func, group_type_graph, entry_first_
     # if not '(x)**' in func:
     #     graph_func.error = "Analisys isn't available"
     #     raise graph_func.func_error()
-    x = sympy.Symbol('x', real=True)
+    x = Symbol('x')
+    init_printing(use_unicode=True)
     try:
         f = eval(func)
         fprime = f.diff(x)
         cryt_points = sympy.solve(fprime, x)
-        cryt_points_out = ', '.join([str(i) for i in cryt_points])
+        cryt_points_out = ', '.join([str(i) for i in cryt_points])  # can add eval
         fprimeprime = f.diff(x).diff(x)
         intervals_points_concave_convex = sympy.solve(fprimeprime, x)
         if len(sympy.solve(fprimeprime, x)) == 0:
@@ -47,8 +49,8 @@ def analysis(func_entry, window, group_type_func, group_type_graph, entry_first_
         indefinite_points = graph_func.analysis_data(func)
         cryt_points.extend(indefinite_points)
         intervals_points_concave_convex.extend(indefinite_points)
-        if len(indefinite_points) == 1:
-            indefinite_points_out = ', '.join([str(i) for i in indefinite_points])
+        if len(indefinite_points) != 1:
+            indefinite_points_out = ', '.join([str(i) for i in indefinite_points])  # can add eval
         else:
             indefinite_points_out = indefinite_points[0]
 

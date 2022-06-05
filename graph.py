@@ -51,6 +51,7 @@ class Graph:
         self.first_point = float(first_point)
         self.last_point = float(last_point)
         self.step = float(step)
+        # before initiate func
         if type_func == 'y(x)=':
             if 'y' not in func:
                 self.error = "Input function error. Function without 'y'"
@@ -65,6 +66,22 @@ class Graph:
             self.func = self.func.replace('^', '**')
         self.func = self.func.replace('(x)', 'x')
         self.func = self.func.replace('x', '(x)')
+        if 'tan' in self.func:
+            for m in re.findall(r'tan\([+-]?.*?\(x\)[+-]?\d*\.?\d*\)+\)?', self.func):
+                self.func = self.func.replace(m, f'(sin{m[3:]})/cos{m[3:]}')
+        if 'ctg' in self.func:
+            for m in re.findall(r'ctg\([+-]?.*?\(x\)[+-]?\d*\.?\d*\)+\)?', self.func):
+                self.func = self.func.replace(m, f'(cos{m[3:]})/sin{m[3:]}')
+        if 'log' in self.func:
+            for m in re.findall(r'log\([+-]?.*?\(x\)[+-]?\d*\.?\d*\)+\)?', self.func):
+                self.func = self.func.replace(m, f'{m[:-1]}, 2)')
+        if 'lg' in self.func:
+            for m in re.findall(r'lg\([+-]?.*?\(x\)[+-]?\d*\.?\d*\)+\)?', self.func):
+                self.func = self.func.replace(m, f'log{m[2:-1]}, 10)')
+        if 'ln' in self.func:
+            for m in re.findall(r'ln\([+-]?.*?\(x\)[+-]?\d*\.?\d*\)+\)?', self.func):
+                self.func = self.func.replace(m, f'log{m[2:-1]}, e)')
+        # end of initiate func
         if (self.last_point < self.first_point and step > 0) or self.step == 0:
             self.error = 'Step error. Impossible to build graph '
             raise self.func_error()
@@ -78,12 +95,6 @@ class Graph:
         else:
             self.presicion = 2
         # For analysis acceptable x (for log(ax**2+bx+c, e)
-        if 'tan' in self.func:
-            for m in re.findall(r'tan\([+-]?.*?\(x\)[+-]?\d*\.?\d*\)+\)?', self.func):
-                self.func = self.func.replace(m, f'(sin{m[3:]})/cos{m[3:]}')
-        if 'ctg' in self.func:
-            for m in re.findall(r'ctg\([+-]?.*?\(x\)[+-]?\d*\.?\d*\)+\)?', self.func):
-                self.func = self.func.replace(m, f'(cos{m[3:]})/sin{m[3:]}')
         if re.search(r'log', self.func):
             for m in re.findall(r'log\(.*?\(x\)[+-]?\d*\.?\d*, ?[0-9e]+\)+', self.func):
                 critical_points = []
