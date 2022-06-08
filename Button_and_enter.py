@@ -170,15 +170,15 @@ but_anal = tk.Button(
 # instruction for entry function
 frm_for_instr = tk.Frame(master=window)
 lbl_instr_1 = tk.Label(master=frm_for_instr, text='Інструкція заповнення поля функції')
-lbl_instr_2 = tk.Label(master=frm_for_instr, text='1. Обов\'язково записувати х в дужки - (х)')
-lbl_instr_3 = tk.Label(master=frm_for_instr, text='2. Недопускати запис під тригонометричними, логарифмічними виразами,\n'
-                                           'в знаменнику інші тригонометричні, логарифмічні вирази, дроби')
+lbl_instr_2 = tk.Label(master=frm_for_instr, text='1. Допустимі вирази запису логарифмів: log-, lg-, ln-, log(a*x^n...+c, base). Недопускати запис х без множника, якщо він не 0 ')
+lbl_instr_3 = tk.Label(master=frm_for_instr, text='2. Допустимі вирази для запису тригонометричних виразів: sin(a*x+b), cos(a*x+b), tan(a*x+b), ctg(a*x+b), \n'
+                                                  'acosh(a*x^n...+c), asinh(a*x^n...+c), atanh(a*x^n...+c), tanh(a*x^n...+c)')
 lbl_instr_4 = tk.Label(master=frm_for_instr, text='3. Скорочувати всі множники х однакових степенів, вводити члени виразу ,\n'
-                                           'функції в знаменнику дробу і логарифму в порядку спадання степеня х')
+                                           'функції в знаменнику дробу, логарифму, виразу зі змінною під степенем <1 в порядку спадання степеня х')
 lbl_instr_5 = tk.Label(master=frm_for_instr, text='4. Недопускати пробіли, записувати всю функцію без пробілів')
-lbl_instr_6 = tk.Label(master=frm_for_instr, text='5. Під дужкою логарифму записувати спочатку функцію, потім базу через кому')
-lbl_instr_7 = tk.Label(master=frm_for_instr, text='Неправильно: log(1*sin(x)); 1/(1*(x)+sin(x)); sin(5*(x)**2+log(x, e)),\n'
-                                           'Правильно: 10*(x)+1/(-3*(x)**3+0*(x)**2+5*(x))-log(1*(x)+4, e)+sin(1*(x))')
+lbl_instr_6 = tk.Label(master=frm_for_instr, text='5. Не записувати під логарифмами дроби з х, під дробами логарифми під х,\n'
+                                                  ' під логарифмами з х інші логарифми з х, аналогічно з дробами.')
+lbl_instr_7 = tk.Label(master=frm_for_instr, text='6. Не ускладнювати функцію, не провокувати виникнення комплексних коренів')
 
 # lbl_instr_8 = tk.Label(master=frm_for_instr, text='Іноді ')
 # state of press dictionary
@@ -188,14 +188,14 @@ group_type_graph = {'scatter': 0, 'line': 0}
 state_button = {1: tk.GROOVE, 0: tk.RAISED}
 
 # y= or x= depends of buuton
-# frm_for_instr.grid(row=0, column=1, pady=2)
-# lbl_instr_1.grid(row=0, column=0, sticky='w', pady=2)
-# lbl_instr_2.grid(row=1, column=0, sticky='w', pady=2)
-# lbl_instr_3.grid(row=2, column=0, sticky='w', pady=2)
-# lbl_instr_4.grid(row=3, column=0, sticky='w', pady=2)
-# lbl_instr_5.grid(row=4, column=0, sticky='w', pady=2)
-# lbl_instr_6.grid(row=5, column=0, sticky='w', pady=2)
-# lbl_instr_7.grid(row=6, column=0, sticky='w', pady=2)
+frm_for_instr.grid(row=0, column=1, pady=2)
+lbl_instr_1.grid(row=0, column=0, sticky='w', pady=2)
+lbl_instr_2.grid(row=1, column=0, sticky='w', pady=2)
+lbl_instr_3.grid(row=2, column=0, sticky='w', pady=2)
+lbl_instr_4.grid(row=3, column=0, sticky='w', pady=2)
+lbl_instr_5.grid(row=4, column=0, sticky='w', pady=2)
+lbl_instr_6.grid(row=5, column=0, sticky='w', pady=2)
+lbl_instr_7.grid(row=6, column=0, sticky='w', pady=2)
 
 func_label.grid(row=1, column=1, sticky='s')
 func_entry.grid(row=2, column=1, sticky='w')
