@@ -29,6 +29,8 @@ def check_interval(x0, xn, step):
     x0, xn, step = float(x0), float(xn), float(step)
     if x0 > xn and step >= 0 or xn > x0 and step <= 0:
         return True
+
+
 # def check_input_func(string):
 #     if re.search(r'[sincolgh]', string):
 #         for i in re.findall(r's|c|l', string):
@@ -81,6 +83,9 @@ class Graph:
         if 'ln' in self.func:
             for m in re.findall(r'ln\([+-]?.*?\(x\)[+-]?\d*\.?\d*\)+\)?', self.func):
                 self.func = self.func.replace(m, f'log{m[2:-1]}, e)')
+        if 'sqrt' in self.func:
+            for m in re.findall(r'sqrt\(.*?\(x\)[+-]?\d*\.?\d*\)+', self.func):
+                self.func = self.func.replace(m, f'{m[4:]}**0.5', 1)
         # end of initiate func
         if (self.last_point < self.first_point and step > 0) or self.step == 0:
             self.error = 'Step error. Impossible to build graph '
@@ -95,46 +100,69 @@ class Graph:
         else:
             self.presicion = 2
         # For analysis acceptable x (for log(ax**2+bx+c, e)
+        sqrt_is, log_is = False, False
+        if re.search(r'\(.*?\(?x\)?[+-]?\d*\.?\d*\)+\*\*0.\d+', self.func):
+            self.critical_points_sqrt, self.list_rise_fall_sqrt, self.dictionary_rise_fall_plots_sqrt = self.check_sqrt()
+            sqrt_is = True
         if re.search(r'log', self.func):
-            for m in re.findall(r'log\(.*?\(x\)[+-]?\d*\.?\d*, ?[0-9e]+\)+', self.func):
-                critical_points = []
-                for m2 in re.findall(r'[+-]?\d+\.?\d*\*\(x\)', m):
-                    critical_points.append(m2[:m2.find('*')])
-                if re.search(r'\)[+-]?\d*\.?\d*,', m):
-                    m2 = re.search(r'\)[+-]?\d*\.?\d*,', m)
-                    if m2.group(0) != '),':
-                        critical_points.append(m2.group(0)[1:-1])
-                    else:
-                        critical_points.append(0)
-                critical_points = [float(i) for i in critical_points]
-                # if len(n) == 1:
-                #     n.append(0)
-                critical_points = np.roots(critical_points)
-                critical_points = list(sorted([round(i, self.presicion) for i in critical_points if not isinstance(i, complex)]))
-                list_rise_fall = []
-                if len(critical_points) == 1:
-                    list_rise_fall.append(eval(m[4:m.find(',')].replace('x', str(critical_points[0]-1))) > 0)
-                    list_rise_fall.append(eval(m[4:m.find(',')].replace('x', str(critical_points[0]+1))) > 0)
-                elif len(critical_points) == 0:
-                    list_rise_fall.append(eval(m[4:m.find(',')].replace('x', '0')) > 0)
-                else:
-                    for i in range(len(critical_points)):
-                        if i == 0:
-                            calculate_point = critical_points[i] - 1
-                            list_rise_fall.append(eval(m[4:m.find(',')].replace('x', str(calculate_point))) > 0)
-                            print(eval(m[4:m.find(',')].replace('x', str(calculate_point))))
-                        elif i == len(critical_points)-1:
-                            calculate_point = critical_points[i] + 1
-                            list_rise_fall.append(eval(m[4:m.find(',')].replace('x', str(calculate_point))) > 0)
-                            print(eval(m[4:m.find(',')].replace('x', str(calculate_point))))
-                            break
-                        calculate_point = critical_points[i] + (critical_points[i+1]-critical_points[i]) / 2
-                        list_rise_fall.append(eval(m[4:m.find(',')].replace('x', str(calculate_point))) > 0)
-                dictionary_rise_fall_plots = {k: v for k, v in zip(critical_points, list_rise_fall[:-1])}
-                self.critical_points, self.list_rise_fall, self.dictionary_rise_fall_plots = critical_points, list_rise_fall, dictionary_rise_fall_plots
-            array_delta = [abs(critical_points[i]-critical_points[i+1]) for i in range(len(critical_points)-1)]
-            if all(list(filter(lambda x: self.step > x, array_delta))):
+            self.critical_points_log, self.list_rise_fall_log, self.dictionary_rise_fall_plots_log = self.check_log()
+            log_is = True
+        if sqrt_is and not log_is:
+            self.critical_points = self.critical_points_sqrt
+            self.list_rise_fall = self.list_rise_fall_sqrt
+            self.dictionary_rise_fall_plots = self.dictionary_rise_fall_plots_sqrt
+        elif log_is and not sqrt_is:
+            self.critical_points = self.critical_points_log
+            self.list_rise_fall = self.list_rise_fall_log
+            self.dictionary_rise_fall_plots = self.dictionary_rise_fall_plots_log
+        if sqrt_is and log_is:
+            self.critical_points = list(set(self.critical_points_sqrt.extend(self.critical_points_log)))
+            self.list_rise_fall = list(set(self.list_rise_fall_sqrt.extend(self.list_rise_fall_log)))
+            self.dictionary_rise_fall_plots = \
+                self.dictionary_rise_fall_plots_sqrt.update(self.dictionary_rise_fall_plots_log)
+        if sqrt_is or log_is:
+            array_delta = [abs(self.critical_points[i] - self.critical_points[i + 1]) for i in
+                           range(len(self.critical_points) - 1)]
+            if array_delta and all(list(filter(lambda x: self.step > x, array_delta))):
                 self.error = "Big step. Try smaller"
+            # for m in re.findall(r'log\(.*?\(x\)[+-]?\d*\.?\d*, ?[0-9e]+\)+', self.func):
+            #     multipliers_x = []
+            #     for m2 in re.findall(r'[+-]?\d+\.?\d*\*\(x\)', m):
+            #         multipliers_x.append(m2[:m2.find('*')])
+            #     if re.search(r'\)[+-]?\d*\.?\d*,', m):
+            #         m2 = re.search(r'\)[+-]?\d*\.?\d*,', m)
+            #         if m2.group(0) != '),':
+            #             multipliers_x.append(m2.group(0)[1:-1])
+            #         else:
+            #             multipliers_x.append(0)
+            #     multipliers_x = [float(i) for i in multipliers_x]
+            #     # if len(n) == 1:
+            #     #     n.append(0)
+            #     critical_points = np.roots(multipliers_x)
+            #     critical_points = list(sorted([round(i, self.presicion) for i in critical_points if not isinstance(i, complex)]))
+            #     list_rise_fall = []
+            #     if len(critical_points) == 1:
+            #         list_rise_fall.append(eval(m[4:m.find(',')].replace('x', str(critical_points[0]-1))) > 0)
+            #         list_rise_fall.append(eval(m[4:m.find(',')].replace('x', str(critical_points[0]+1))) > 0)
+            #     elif len(critical_points) == 0:
+            #         list_rise_fall.append(eval(m[4:m.find(',')].replace('x', '0')) > 0)
+            #     else:
+            #         for i in range(len(critical_points)):
+            #             if i == 0:
+            #                 calculate_point = critical_points[i] - 1
+            #                 list_rise_fall.append(eval(m[4:m.find(',')].replace('x', str(calculate_point))) > 0)
+            #                 # print(eval(m[4:m.find(',')].replace('x', str(calculate_point))))
+            #             elif i == len(critical_points)-1:
+            #                 calculate_point = critical_points[i] + 1
+            #                 list_rise_fall.append(eval(m[4:m.find(',')].replace('x', str(calculate_point))) > 0)
+            #                 # print(eval(m[4:m.find(',')].replace('x', str(calculate_point))))
+            #                 break
+            #             calculate_point = critical_points[i] + (critical_points[i+1]-critical_points[i]) / 2
+            #             list_rise_fall.append(eval(m[4:m.find(',')].replace('x', str(calculate_point))) > 0)
+            #             if 'log' in m:
+            #                 list_rise_fall.append([eval(m[4:m.find(',')].replace('x', str(calculate_point))) > 0, False])
+            #             else:
+            #                 list_rise_fall.append([eval(m[4:m.find(',')].replace('x', str(calculate_point))) > 0, True])
 
     def scatter(self):
         if self.type_func == 'y_x':
@@ -158,6 +186,138 @@ class Graph:
             self.graph_func.ylabel("x")
         # self.graph_func.grid(axis='both')
 
+    def check_sqrt(self):
+        for m in re.findall(r'\(.*?\(?x\)?[+-]?\d*\.?\d*\)+\*\*0.\d+', self.func):
+            multipliers_x = []
+            #
+            if re.search(r'\*\*\d+', m):
+                x_power_max = int(re.search(r'\*\*\d+', m).group(0)[2:])
+                flag = x_power_max
+                for m2 in re.findall(r'[+-]?\d+\.?\d*\*\(x\)\*\*\d+', m):
+                    flag_new = int(re.search(r'\*\*\d+', m2).group(0)[2:])
+                    while flag != flag_new:
+                        multipliers_x.append(0)
+                        flag -= 1
+                    multipliers_x.append(m2[:m2.find('*')])
+                    flag -= 1
+                while len(multipliers_x) != x_power_max - 1:
+                    multipliers_x.append(0)
+                if re.search(r'\d[+-]\d+\.?\d*\*\(x\)[^*]?.*?\)', m):
+                    num_x = re.search(r'\d[+-]\d+\.?\d*\*\(x\)[^*]?.*?\)', m).group(0)
+                    multipliers_x.append(num_x[1:num_x.find('*')])
+                else:
+                    multipliers_x.append(0)
+            else:
+                num_x = re.search(r'[+-]?\d+\.?\d*\*\(x\)', m).group(0)
+                multipliers_x.append(num_x[:num_x.find('*')])
+            if re.search(r'\)?\d?[+-]?\d+\.?\d*\)', m):
+                m2 = re.search(r'\)?\d?[+-]?\d+\.?\d*\)', m)
+                multipliers_x.append(m2.group(0)[1:-1])
+            else:
+                multipliers_x.append(0)
+            #
+            # for m2 in re.findall(r'[+-]?\d+\.?\d*\*\(x\)', m):
+            #     multipliers_x.append(m2[:m2.find('*')])
+            # if re.search(r'\)[+-]?\d*\.?\d*', m):
+            #     m2 = re.search(r'\)[+-]?\d*\.?\d*', m)
+            #     if m2.group(0) != ')':
+            #         multipliers_x.append(m2.group(0)[1:-1])
+            #     else:
+            #         multipliers_x.append(0)
+            #
+            multipliers_x = [float(i) for i in multipliers_x]
+            print(multipliers_x)
+            critical_points = np.roots(multipliers_x)
+            critical_points = list(
+                sorted([round(i, 2) for i in critical_points if not isinstance(i, complex)]))
+            list_rise_fall = []
+            if len(critical_points) == 1:
+                list_rise_fall.append([eval(m[m.find('('):m.rfind(')') + 1].replace('x', str(critical_points[0] - 1))) > 0, True])
+                list_rise_fall.append([eval(m[m.find('('):m.rfind(')') + 1].replace('x', str(critical_points[0] + 1))) > 0, True])
+            elif len(critical_points) == 0:
+                list_rise_fall.append([eval(m[m.find('('):m.rfind(')') + 1].replace('x', '0')) > 0, True])
+            else:
+                for i in range(len(critical_points)):
+                    if i == 0:
+                        calculate_point = critical_points[i] - 1
+                        list_rise_fall.append([eval(m[m.find('('):m.rfind(')') + 1].replace('x', str(calculate_point))) > 0, True])
+                        print(eval(m[m.find('('):m.rfind(')') + 1].replace('x', str(calculate_point))))
+                    elif i == len(critical_points) - 1:
+                        calculate_point = critical_points[i] + 1
+                        list_rise_fall.append([eval(m[m.find('('):m.rfind(')') + 1].replace('x', str(calculate_point))) > 0, True])
+                        print(eval(m[m.find('('):m.rfind(')') + 1].replace('x', str(calculate_point))))
+                        break
+                    calculate_point = critical_points[i] + (critical_points[i + 1] - critical_points[i]) / 2
+                    list_rise_fall.append([eval(m[m.find('('):m.rfind(')') + 1].replace('x', str(calculate_point))) > 0, True])
+        dictionary_rise_fall_plots = {k: v for k, v in zip(critical_points, list_rise_fall[:-1])}
+        return critical_points, list_rise_fall, dictionary_rise_fall_plots
+
+    def check_log(self):
+        for m in re.findall(r'log\(.*?\(x\)[+-]?\d*\.?\d*, ?[0-9e]+\)+', self.func):
+            multipliers_x = []
+            if re.search(r'\*\*\d+', m):
+                x_power_max = int(re.search(r'\*\*\d+', m).group(0)[2:])
+                flag = x_power_max
+                for m2 in re.findall(r'[+-]?\d+\.?\d*\*\(x\)\*\*\d+', m):
+                    flag_new = int(re.search(r'\*\*\d+', m2).group(0)[2:])
+                    while flag != flag_new:
+                        multipliers_x.append(0)
+                        flag -= 1
+                    multipliers_x.append(m2[:m2.find('*')])
+                    flag -= 1
+                while len(multipliers_x) != x_power_max - 1:
+                    multipliers_x.append(0)
+                if re.search(r'\d[+-]\d+\.?\d*\*\(x\)[^*]?.*?\)', m):
+                    num_x = re.search(r'\d[+-]\d+\.?\d*\*\(x\)[^*]?.*?\)', m).group(0)
+                    multipliers_x.append(num_x[1:num_x.find('*')])
+                else:
+                    multipliers_x.append(0)
+            else:
+                num_x = re.search(r'[+-]?\d+\.?\d*\*\(x\)', m).group(0)
+                multipliers_x.append(num_x[:num_x.find('*')])
+            if re.search(r'\)?\d?[+-]?\d+\.?\d*\)', m):
+                m2 = re.search(r'\)?\d?[+-]?\d+\.?\d*\)', m)
+                multipliers_x.append(m2.group(0)[1:-1])
+            else:
+                multipliers_x.append(0)
+            #
+            # for m2 in re.findall(r'[+-]?\d+\.?\d*\*\(x\)', m):
+            #     multipliers_x.append(m2[:m2.find('*')])
+            # if re.search(r'\)[+-]?\d*\.?\d*,', m):
+            #     m2 = re.search(r'\)[+-]?\d*\.?\d*,', m)
+            #     if m2.group(0) != '),':
+            #         multipliers_x.append(m2.group(0)[1:-1])
+            #     else:
+            #         multipliers_x.append(0)
+            #
+            multipliers_x = [float(i) for i in multipliers_x]
+            critical_points = np.roots(multipliers_x)
+            critical_points = list(sorted([round(i, self.presicion) for i in critical_points if not isinstance(i, complex)]))
+            list_rise_fall = []
+            if len(critical_points) == 1:
+                list_rise_fall.append([eval(m[4:m.find(',')].replace('x', str(critical_points[0]-1))) > 0, False])
+                list_rise_fall.append([eval(m[4:m.find(',')].replace('x', str(critical_points[0]+1))) > 0, False])
+            elif len(critical_points) == 0:
+                list_rise_fall.append([eval(m[4:m.find(',')].replace('x', '0')) > 0, False])
+            else:
+                for i in range(len(critical_points)):
+                    if i == 0:
+                        calculate_point = critical_points[i] - 1
+                        list_rise_fall.append([eval(m[4:m.find(',')].replace('x', str(calculate_point))) > 0, False])
+                        # print(eval(m[4:m.find(',')].replace('x', str(calculate_point))))
+                    elif i == len(critical_points)-1:
+                        calculate_point = critical_points[i] + 1
+                        list_rise_fall.append([eval(m[4:m.find(',')].replace('x', str(calculate_point))) > 0, False])
+                        # print(eval(m[4:m.find(',')].replace('x', str(calculate_point))))
+                        break
+
+                    calculate_point = critical_points[i] + (critical_points[i+1]-critical_points[i]) / 2
+                    # list_rise_fall.append(eval(m[4:m.find(',')].replace('x', str(calculate_point))) > 0)
+                    list_rise_fall.append([eval(m[4:m.find(',')].replace('x', str(calculate_point))) > 0, False])
+
+            dictionary_rise_fall_plots = {k: v for k, v in zip(critical_points, list_rise_fall[:-1])}
+            return critical_points, list_rise_fall, dictionary_rise_fall_plots
+
     def analysis_log_x(self, x):
         if not self.critical_points:
             return False
@@ -167,11 +327,15 @@ class Graph:
             else:
                 return x
         for i in range(len(self.critical_points)):
-            if x < self.critical_points[i] and self.dictionary_rise_fall_plots[self.critical_points[i]]:
+            if x < self.critical_points[i] and self.dictionary_rise_fall_plots[self.critical_points[i]][0]:
                 return x
-            elif not self.dictionary_rise_fall_plots[self.critical_points[i]]:
-                while x <= self.critical_points[i]:
-                    x += self.step
+            elif not self.dictionary_rise_fall_plots[self.critical_points[i]][0]:
+                if self.dictionary_rise_fall_plots[self.critical_points[i]][1]:
+                    while x < self.critical_points[i]:
+                        x += self.step
+                elif not self.dictionary_rise_fall_plots[self.critical_points[i]][1]:
+                    while x <= self.critical_points[i]:
+                        x += self.step
         if not self.list_rise_fall[-1]:
             if x > self.critical_points[-1]:
                 return 'False'
@@ -180,37 +344,37 @@ class Graph:
     def analysis_data(self, func: str):
         gap_all = []
         for m in re.findall(r'/ ?\([+-]?.*?\(x\).*?[+-]?\d*\.?\d*\)+\)?', self.func):
-            gap_points = []
+            multipliers_x = []
             if re.search(r'\*\*\d', m):
-                x_power_max = int(re.search(r'\*\*\d', m).group(0)[2:])
+                x_power_max = int(re.search(r'\*\*\d+', m).group(0)[2:])
                 flag = x_power_max
-                for m2 in re.findall(r'[+-]?\d+\.?\d*\*\(x\)\*\*\d', m):
-                    flag_new = int(re.search(r'\*\*\d', m2).group(0)[2:])
+                for m2 in re.findall(r'[+-]?\d+\.?\d*\*\(x\)\*\*\d+', m):
+                    flag_new = int(re.search(r'\*\*\d+', m2).group(0)[2:])
                     while flag != flag_new:
-                        gap_points.append(0)
+                        multipliers_x.append(0)
                         flag -= 1
-                    gap_points.append(m2[:m2.find('*')])
+                    multipliers_x.append(m2[:m2.find('*')])
                     flag -= 1
-                while len(gap_points) != x_power_max - 1:
-                    gap_points.append(0)
+                while len(multipliers_x) != x_power_max - 1:
+                    multipliers_x.append(0)
                 if re.search(r'\d[+-]\d+\.?\d*\*\(x\)[^*]?.*?\)', m):
                     num_x = re.search(r'\d[+-]\d+\.?\d*\*\(x\)[^*]?.*?\)', m).group(0)
-                    gap_points.append(num_x[1:num_x.find('*')])
+                    multipliers_x.append(num_x[1:num_x.find('*')])
                 else:
-                    gap_points.append(0)
+                    multipliers_x.append(0)
             else:
                 num_x = re.search(r'[+-]?\d+\.?\d*\*\(x\)', m).group(0)
-                gap_points.append(num_x[:num_x.find('*')])
+                multipliers_x.append(num_x[:num_x.find('*')])
             if re.search(r'\)?\d?[+-]?\d+\.?\d*\)', m):
                 m2 = re.search(r'\)?\d?[+-]?\d+\.?\d*\)', m)
-                gap_points.append(m2.group(0)[1:-1])
+                multipliers_x.append(m2.group(0)[1:-1])
             else:
-                gap_points.append(0)
-            gap_points = [float(i) for i in gap_points]
-            gap_points = np.roots(gap_points)
+                multipliers_x.append(0)
+            multipliers_x = [float(i) for i in multipliers_x]
+            gap_points = np.roots(multipliers_x)
             gap_all.extend(gap_points)
         if '/sin' in self.func:
-            gap_points = []
+            multipliers_x = []
             for m in re.findall(r'/sin\([+-]?\d*\.?\d*\*?\(x\)[+-]?\d*\.?\d*\)', self.func):
                 if re.search(r'\([+-]?\d*\.?\d*\*?\(x', m):
                     a = float(re.search(r'\([+-]?\d+\.?\d*\*', m).group(0)[1:-1])
@@ -224,12 +388,12 @@ class Graph:
                 gap_point = ceil((a * x0 + b) / pi)
                 while x0 < self.last_point:
                     x0 = (pi * gap_point - b) / a
-                    gap_points.append(x0)
+                    multipliers_x.append(x0)
                     gap_point += 1
-                gap_all.extend(gap_points)
+                gap_all.extend(multipliers_x)
 
         if '/cos' in self.func:
-            gap_points = []
+            multipliers_x = []
             for m in re.findall(r'/cos\([+-]?\d*\.?\d*\*?\(x\)[+-]?\d*\.?\d*\)', self.func):
                 if re.search(r'\([+-]?\d*\.?\d*\*?\(x', m):
                     a = float(re.search(r'\([+-]?\d+\.?\d*\*', m).group(0)[1:-1])
@@ -243,9 +407,9 @@ class Graph:
                 gap_point = ceil((a * x0 + b - pi/2) / pi)
                 while x0 < self.last_point:
                     x0 = (pi * gap_point - b + pi/2) / a
-                    gap_points.append(x0)
+                    multipliers_x.append(x0)
                     gap_point += 1
-                gap_all.extend(gap_points)
+                gap_all.extend(multipliers_x)
 
         gap_all = list(set(gap_all))
         gap_all = [round(i, self.presicion) for i in gap_all if not isinstance(i, complex)]

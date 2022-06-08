@@ -8,6 +8,7 @@ import tkinter as tk
 import tkinter.messagebox as MessageBox
 sympy.init_printing(use_unicode=True)
 
+
 def analysis(func_entry, window, group_type_func, group_type_graph, entry_first_point, entry_last_point, entry_step):
     group_type_func = "x_y"
     group_type_graph = "line"
@@ -53,6 +54,11 @@ def analysis(func_entry, window, group_type_func, group_type_graph, entry_first_
             indefinite_points_out = ', '.join([str(i) for i in indefinite_points])  # can add eval
         else:
             indefinite_points_out = indefinite_points[0]
+
+
+    # if re.search(r'\(.*?\(?x\)?[+-]?\d*\.?\d*\)+\*\*0.\d+', func):
+    #
+    # if re.search(r'log', func):
 
     max_min_point = []
     for i in cryt_points:

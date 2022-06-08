@@ -188,14 +188,14 @@ group_type_graph = {'scatter': 0, 'line': 0}
 state_button = {1: tk.GROOVE, 0: tk.RAISED}
 
 # y= or x= depends of buuton
-frm_for_instr.grid(row=0, column=1, pady=2)
-lbl_instr_1.grid(row=0, column=0, sticky='w', pady=2)
-lbl_instr_2.grid(row=1, column=0, sticky='w', pady=2)
-lbl_instr_3.grid(row=2, column=0, sticky='w', pady=2)
-lbl_instr_4.grid(row=3, column=0, sticky='w', pady=2)
-lbl_instr_5.grid(row=4, column=0, sticky='w', pady=2)
-lbl_instr_6.grid(row=5, column=0, sticky='w', pady=2)
-lbl_instr_7.grid(row=6, column=0, sticky='w', pady=2)
+# frm_for_instr.grid(row=0, column=1, pady=2)
+# lbl_instr_1.grid(row=0, column=0, sticky='w', pady=2)
+# lbl_instr_2.grid(row=1, column=0, sticky='w', pady=2)
+# lbl_instr_3.grid(row=2, column=0, sticky='w', pady=2)
+# lbl_instr_4.grid(row=3, column=0, sticky='w', pady=2)
+# lbl_instr_5.grid(row=4, column=0, sticky='w', pady=2)
+# lbl_instr_6.grid(row=5, column=0, sticky='w', pady=2)
+# lbl_instr_7.grid(row=6, column=0, sticky='w', pady=2)
 
 func_label.grid(row=1, column=1, sticky='s')
 func_entry.grid(row=2, column=1, sticky='w')
