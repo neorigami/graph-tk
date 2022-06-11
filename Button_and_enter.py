@@ -81,6 +81,23 @@ def y_x():
     but_y_x.config(relief=state_button[group_type_func['y_x']])
 
 
+
+# def r_theta():
+#     global group_type_func, group_type_graph
+#     group_type_func = check_state(group_type_func, 'r_theta')
+#     but_x_y.config(relief=state_button[group_type_func['x_y']])
+#     but_y_x.config(relief=state_button[group_type_func['y_x']])
+#     but_polar.config(relief=state_button[group_type_func['r_theta']])
+#     if group_type_func['r_theta']:
+#         but_scat.config(state='disabled')
+#         but_line.config(state='disabled')
+#     else:
+#         but_scat.config(state='normal')
+#         but_line.config(state='normal')
+#     func_func.config(text='r(theta)=')
+#     group_type_graph = check_state(group_type_graph, 'polar')
+
+
 def scatter():
     global group_type_graph
     group_type_graph = check_state(group_type_graph, 'scatter')
@@ -95,6 +112,9 @@ def line():
     but_scat.config(relief=state_button[group_type_graph['scatter']])
     but_line.config(relief=state_button[group_type_graph['line']])
     entry_hist.config(state='disabled')
+
+
+
 
 
 window = tk.Tk()
@@ -124,7 +144,11 @@ but_x_y = tk.Button(
     text="x(y)=y",
     command=x_y
 )
-
+# but_polar = tk.Button(
+#     master=window,
+#     text='Polar',
+#     command=r_theta
+# )
 lbl_type_graph = tk.Label(master=window, text="Type of build graph")
 
 entry_hist = tk.Entry(master=window, width=5, state="disabled")
@@ -140,6 +164,7 @@ but_line = tk.Button(
     text="Line",
     command=line
 )
+
 
 ## delta
 frame_step = tk.Frame(master=window)
@@ -169,22 +194,23 @@ but_anal = tk.Button(
 
 # instruction for entry function
 frm_for_instr = tk.Frame(master=window)
-lbl_instr_1 = tk.Label(master=frm_for_instr, text='Інструкція заповнення поля функції')
-lbl_instr_2 = tk.Label(master=frm_for_instr, text='1. Допустимі вирази запису логарифмів: log-, lg-, ln-, log(a*x^n...+c, base). Недопускати запис х без множника, якщо він не 0 ')
-lbl_instr_3 = tk.Label(master=frm_for_instr, text='2. Допустимі вирази для запису тригонометричних виразів: sin(a*x+b), cos(a*x+b), tan(a*x+b), ctg(a*x+b), \n'
+lbl_instr_1 = tk.Label(master=frm_for_instr, justify='left', text='Інструкція заповнення поля функції')
+lbl_instr_2 = tk.Label(master=frm_for_instr, justify='left', text='1. Допустимі вирази запису логарифмів: log-, lg-, ln-, log(a*x^n...+c, base).\n'
+                                                  ' Недопускати запис х без множника, якщо він не 0 ')
+lbl_instr_3 = tk.Label(master=frm_for_instr, justify='left', text='2. Допустимі вирази для запису тригонометричних виразів: sin(a*x+b), cos(a*x+b), tan(a*x+b), ctg(a*x+b), \n'
                                                   'acosh(a*x^n...+c), asinh(a*x^n...+c), atanh(a*x^n...+c), tanh(a*x^n...+c)')
-lbl_instr_4 = tk.Label(master=frm_for_instr, text='3. Скорочувати всі множники х однакових степенів, вводити члени виразу ,\n'
+lbl_instr_4 = tk.Label(master=frm_for_instr, justify='left', text='3. Скорочувати всі множники х однакових степенів, вводити члени виразу ,\n'
                                            'функції в знаменнику дробу, логарифму, виразу зі змінною під степенем <1 в порядку спадання степеня х')
-lbl_instr_5 = tk.Label(master=frm_for_instr, text='4. Недопускати пробіли, записувати всю функцію без пробілів')
-lbl_instr_6 = tk.Label(master=frm_for_instr, text='5. Не записувати під логарифмами дроби з х, під дробами логарифми під х,\n'
+lbl_instr_5 = tk.Label(master=frm_for_instr, justify='left', text='4. Недопускати пробіли, записувати всю функцію без пробілів')
+lbl_instr_6 = tk.Label(master=frm_for_instr, justify='left', text='5. Не записувати під логарифмами дроби з х, під дробами логарифми під х,\n'
                                                   ' під логарифмами з х інші логарифми з х, аналогічно з дробами.')
-lbl_instr_7 = tk.Label(master=frm_for_instr, text='6. Не ускладнювати функцію, не провокувати виникнення комплексних коренів')
+lbl_instr_7 = tk.Label(master=frm_for_instr, justify='left', text='6. Не ускладнювати функцію, не провокувати виникнення комплексних коренів')
 
 # lbl_instr_8 = tk.Label(master=frm_for_instr, text='Іноді ')
 # state of press dictionary
 lbl_flag = False
-group_type_func = {'y_x': 0, 'x_y': 0}
-group_type_graph = {'scatter': 0, 'line': 0}
+group_type_func = {'y_x': 0, 'x_y': 0, 'r_theta': 0}
+group_type_graph = {'scatter': 0, 'line': 0, 'polar': 0}
 state_button = {1: tk.GROOVE, 0: tk.RAISED}
 
 # y= or x= depends of buuton
@@ -206,6 +232,7 @@ lbl_type_func.grid(row=4, column=1, padx=10, pady=5)
 # frame_but_y_x.grid(row=2, column=0, padx=10)
 but_y_x.grid(row=5, column=0, padx=10, sticky='e')
 but_x_y.grid(row=5, column=2, padx=10, sticky='w')
+# but_polar.grid(row=5, column=2, padx=10, sticky='w')
 lbl_type_graph.grid(row=6, column=1, padx=10, pady=5)
 but_line.grid(row=7, column=0, padx=10, sticky='e')
 but_scat.grid(row=7, column=2, padx=10, sticky='w')

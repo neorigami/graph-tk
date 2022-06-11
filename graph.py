@@ -42,16 +42,24 @@ class Graph:
         self.last_point = float(last_point)
         self.step = float(step)
         # before initiate func
-        if type_func == 'y(x)=':                # перевірка на введення, залежно від типу функції, змінної
+        if type_func == 'x_y':                # перевірка на введення, залежно від типу функції, змінної
             if 'y' not in func:
                 self.error = "Input function error. Function without 'y'"
                 raise self.func_error()
             self.func = str(func).replace('y', 'x')
-        else:
+
+        elif type_func == 'y_x':
             if 'x' not in func:
                 self.error = "Input function error. Function without 'x'"
                 raise self.func_error()
             self.func = str(func)
+
+        # else:
+        #     if 'theta' not in func:
+        #         self.error = "Input function error. Function without 'x'"
+        #         raise self.func_error()
+        #     self.func = str(func).replace('theta', 'x')
+
         if '^' in func:
             self.func = self.func.replace('^', '**')
         self.func = self.func.replace('(x)', 'x')       # усунення різниці де поставлені дужки навколо х, де ні
@@ -119,6 +127,9 @@ class Graph:
             self.scatter()
         elif self.type_graph == 'line':         # по лініях
             self.line()
+        # elif self.type_graph == "polar":
+        #     self.polar()
+
 
     def scatter(self):
         if self.type_func == 'y_x':             # побудова у(х)
@@ -129,6 +140,7 @@ class Graph:
             self.graph_func.scatter(x=self.y, y=self.x, c='blue')
             self.graph_func.xlabel("y")
             self.graph_func.ylabel("x")
+
         # self.graph_func.grid(axis='both')
 
     def line(self):
@@ -142,11 +154,14 @@ class Graph:
             self.graph_func.ylabel("x")
         # self.graph_func.grid(axis='both')
 
+    # def polar(self):
+    #     self.graph_func.polar(theta=self.x, r=self.y, c='blue')
+
     def check_sqrt(self):
         for m in re.findall(r'\(.*?\(?x\)?[+-]?\d*\.?\d*\)+\*\*0.\d+', self.func):  # перевірка на наявінсть х в степені менше 1
             multipliers_x = []                                              # для відкидування проміжків невизначеності функції,
             #                                                               # при яких вираз під степенем менше 0
-            if re.search(r'\*\*\d+', m):                                    # перевірка на наявінсть х в степені
+            if re.search(r'\*\*\d+', m[:m.rfind(')')]):                                    # перевірка на наявінсть х в степені
                 x_power_max = int(re.search(r'\*\*\d+', m).group(0)[2:])    # визначення максимального степеня
                 flag = x_power_max                                          # передача максимального степені новій змінній
                 for m2 in re.findall(r'[+-]?\d+\.?\d*\*\(x\)\*\*\d+', m):   # якщо є пропущенні степені, вони добавляються
@@ -188,11 +203,11 @@ class Graph:
                     if i == 0:
                         calculate_point = root_points[i] - 1
                         list_rise_fall.append([eval(m[m.find('('):m.rfind(')') + 1].replace('x', str(calculate_point))) > 0, True])     # визначення на кожному проміжку знака функції
-                        print(eval(m[m.find('('):m.rfind(')') + 1].replace('x', str(calculate_point))))                                 # +1 і -1 це для крайньої правої і крайньої лівого кореня
+                        # print(eval(m[m.find('('):m.rfind(')') + 1].replace('x', str(calculate_point))))                                 # +1 і -1 це для крайньої правої і крайньої лівого кореня
                     elif i == len(root_points) - 1:                                                                                 # де нема різниці на скільки більшу точку ставити для визначення знака
                         calculate_point = root_points[i] + 1
                         list_rise_fall.append([eval(m[m.find('('):m.rfind(')') + 1].replace('x', str(calculate_point))) > 0, True])
-                        print(eval(m[m.find('('):m.rfind(')') + 1].replace('x', str(calculate_point))))
+                        # print(eval(m[m.find('('):m.rfind(')') + 1].replace('x', str(calculate_point))))
                         break
                     calculate_point = root_points[i] + (root_points[i + 1] - root_points[i]) / 2                            # визначення знака функції між коренями, обрахунок точки для підстановки х
                     list_rise_fall.append([eval(m[m.find('('):m.rfind(')') + 1].replace('x', str(calculate_point))) > 0, True])         # обраховується точно щоб опинився між коренями
