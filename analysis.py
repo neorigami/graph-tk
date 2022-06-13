@@ -10,13 +10,11 @@ sympy.init_printing(use_unicode=True)
 
 
 def analysis(func_entry, window, group_type_func, group_type_graph, entry_first_point, entry_last_point, entry_step):
-    # group_type_func = "x_y"
-    # group_type_graph = "line"
 
     # initialisation function
 
     graph_func = graph.Graph(func_entry.get(),
-                             "x_y",
+                             "y_x",
                              "line",
                              first_point=entry_first_point.get(),
                              last_point=entry_last_point.get(),
@@ -48,7 +46,7 @@ def analysis(func_entry, window, group_type_func, group_type_graph, entry_first_
     except:
         MessageBox.showinfo("Error", "Analysis error.\nTry again.")
 
-    if '/' in func or 'tan' in func or 'ctg' in func:           # якщо присутні вирази, що створюють точки невизначеності функції
+    if '/' in func or '/sin' in func or '/cos' in func:           # якщо присутні вирази, що створюють точки невизначеності функції
         indefinite_points = graph_func.analysis_data(func)      # визначення точок
         cryt_points.extend(indefinite_points)
         intervals_points_concave_convex.extend(indefinite_points)       # додавання для подальшого розподілу по проміжках
@@ -70,7 +68,7 @@ def analysis(func_entry, window, group_type_func, group_type_graph, entry_first_
                                                                 # перед і після точки, True для додатнього
     dictionary_cryt_point = {k: v for k, v in zip(cryt_points, max_min_point)}      # кожній точці присвоюється значення true, false
     for k in dictionary_cryt_point:                                                 # або false, true, що означатиме зростання чи спадання перед і після точки
-        if '/' in func or 'tan' in func or 'ctg' in func and k in indefinite_points:
+        if '/' in func or '/sin' in func or '/cos' in func and k in indefinite_points:
             dictionary_cryt_point[k].append(False)
         else:                                           # якщо критична точка є точкою невизначеності функції, позначається фалз, як точка "не включно"
             dictionary_cryt_point[k].append(True)
@@ -114,9 +112,11 @@ def analysis(func_entry, window, group_type_func, group_type_graph, entry_first_
         if len(dictionary_cryt_point.keys()) == 1:                          # в попередніх рядках була умова допущення
             if not dictionary_cryt_point[last_point][2]:                    # до виразів, якщо кількість критичних точок
                 if dictionary_cryt_point[last_point][0]:                    # більше 0. Якщо ж ні, то жодна з умов не
-                    str_rise = f'(-∞; {last_point}) & ({last_point}; +∞)'   # виконається. Якщо тільки 1 критична точка,
+                    str_rise = f'(-∞; {last_point})'   # виконається. Якщо тільки 1 критична точка,
+                    str_fall = f'({last_point}; +∞)'    # ????????????????
                 else:                                                       # то відповідна перевірка буде перевірена
-                    str_fall = f'(-∞; {last_point}) & ({last_point}; +∞)'   # як в попередньому, але з включенням з
+                    str_fall = f'(-∞; {last_point})'   # як в попередньому, але з включенням з
+                    str_rise = f'({last_point}; +∞)'  # ?????????????????
             else:                                                           # з додатньою безкінечністю
                 if dictionary_cryt_point[last_point][0]:
                     str_rise += f'(-∞; {last_point}]'
@@ -278,20 +278,20 @@ def analysis(func_entry, window, group_type_func, group_type_graph, entry_first_
     lbl_intervals_points_up_down.pack()
     lbl_intervals_up_down.pack()
     # Recommendation to build
-    if cryt_points:                                                    # визначення рекомендованих точок побудови,
-        recommend_first_point = sorted(cryt_points)[0] - 1             # в межах яких видно зміну поведінки функції
-        recommend_last_point = sorted(cryt_points)[-1] + 1             # це охоплює критичні точки, точки невизначеності
-        if len(cryt_points) > 1:                                       # і невеликий проміжко навколо крайніх точок
-            analysis_step_array = [cryt_points[i + 1] - cryt_points[i] for i in range(len(cryt_points) - 1)]
-            recommend_step = round((sum(analysis_step_array) / len(analysis_step_array) / 5), 5)
-        else:                         # визначення рекомендованого кроку, щоб не було пропущено критичних точок через
-            recommend_step = 0.5      # "перескок"
-        global lbl_flag, lbl_recommend_first_point, lbl_recommend_last_point, lbl_recommend_step
-        lbl_recommend_first_point = tk.Label(master=window, text=f'Рекомендована перша точка: {recommend_first_point}')
-        lbl_recommend_last_point = tk.Label(master=window, text=f'Рекомендована остання точка: {recommend_last_point}')
-        lbl_recommend_step = tk.Label(master=window, text=f'Рекомендований крок побудови: {recommend_step}')
-        lbl_recommend_first_point.grid(row=10, column=1, pady=2, sticky='e')
-        lbl_recommend_last_point.grid(row=11, column=1, pady=2, sticky='e')
-        lbl_recommend_step.grid(row=12, column=1, pady=2, sticky='e')
-        lbl_flag = True
+    # if cryt_points:                                                    # визначення рекомендованих точок побудови,
+    #     recommend_first_point = sorted(cryt_points)[0] - 1             # в межах яких видно зміну поведінки функції
+    #     recommend_last_point = sorted(cryt_points)[-1] + 1             # це охоплює критичні точки, точки невизначеності
+    #     if len(cryt_points) > 1:                                       # і невеликий проміжко навколо крайніх точок
+    #         analysis_step_array = [cryt_points[i + 1] - cryt_points[i] for i in range(len(cryt_points) - 1)]
+    #         recommend_step = round((sum(analysis_step_array) / len(analysis_step_array) / 5), 5)
+    #     else:                         # визначення рекомендованого кроку, щоб не було пропущено критичних точок через
+    #         recommend_step = 0.1      # "перескок"
+    #     global lbl_flag, lbl_recommend_first_point, lbl_recommend_last_point, lbl_recommend_step
+    #     lbl_recommend_first_point = tk.Label(master=window, text=f'Рекомендована перша точка: {recommend_first_point}')
+    #     lbl_recommend_last_point = tk.Label(master=window, text=f'Рекомендована остання точка: {recommend_last_point}')
+    #     lbl_recommend_step = tk.Label(master=window, text=f'Рекомендований крок побудови: {recommend_step}')
+    #     lbl_recommend_first_point.grid(row=10, column=1, pady=2, sticky='e')
+    #     lbl_recommend_last_point.grid(row=11, column=1, pady=2, sticky='e')
+    #     lbl_recommend_step.grid(row=12, column=1, pady=2, sticky='e')
+    #     lbl_flag = True
 
