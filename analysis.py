@@ -27,17 +27,21 @@ def analysis(func_entry, window, group_type_func, group_type_graph, entry_first_
     x = Symbol('x')        # з бібліотеки sympy визначення змінної у фукнції
     init_printing(use_unicode=True)
     cryt_points = []
+    indefinite_points = []
     intervals_points_concave_convex = []
+    func = func.replace('x', '(x)')
     try:
         f = eval(func)          # надання можливості sympy вираховувати похідну
         fprime = f.diff(x)      # знаходження похідної
-        cryt_points = list(filter(lambda x: not isinstance(complex, x), sympy.solve(fprime, x)))  # знаходження нулів похідної, відсіювання комлексних
+        # cryt_points = sympy.solve(fprime, x)
+        # cryt_points = list(filter(lambda x: not isinstance(complex, x), cryt_points))
+        cryt_points = graph.find_roots(fprime)  # знаходження нулів похідної, відсіювання комлексних
         cryt_points = [round(eval(str(i)), graph_func.presicion) for i in cryt_points]  # переведення дробових виразів у десяткові
         cryt_points_out = ', '.join([str(i) for i in cryt_points])  # виведення критичних точок через кому
         if len(sympy.solve(fprime, x)) == 1:
             cryt_points_out = cryt_points[0]     # якщо перша похідна одна, то виведення одного числа
         fprimeprime = f.diff(x).diff(x)     # друга похідна
-        intervals_points_concave_convex = list(filter(lambda x: not isinstance(complex, x), sympy.solve(fprimeprime, x)))  # знаходження нулів другої похідної, відсіювання комлексних
+        intervals_points_concave_convex = graph.find_roots(fprimeprime)  # знаходження нулів другої похідної, відсіювання комлексних
         intervals_points_concave_convex = [round(eval(str(i)), graph_func.presicion) for i in intervals_points_concave_convex]  # знаходження нулів другої похідної, переведення дробових виразів у десяткові
         intervals_points_concave_convex_out = ', '.join([str(i) for i in intervals_points_concave_convex])  # виведення точок перегину через кому
         if len(sympy.solve(fprimeprime, x)) == 1:
@@ -79,17 +83,17 @@ def analysis(func_entry, window, group_type_func, group_type_graph, entry_first_
         for k in sorted(dictionary_cryt_point.keys())[:-1]:     # спершу визначення чи точка входять в область
             if k == min(dictionary_cryt_point.keys()):          # визначення, потім чи є точка першою, для підставлення
                 if not dictionary_cryt_point[k][2]:             # безкінечності
-                    if dictionary_cryt_point[k][0]:             # в рядку 74 перевірка на те, що точка перша
-                        str_rise += f'(-∞; {k}) & ({k}; '       # в рядку 75 перевірка чи функція у точці визначена
+                    if dictionary_cryt_point[k][0]:             # в рядку 80 перевірка на те, що точка перша
+                        str_rise += f'(-∞; {k}) & ({k}; '       # в рядку 81 перевірка чи функція у точці визначена
                     else:                                       # через булінове значення
                         str_fall += f'(-∞; {k}) & ({k}; '
                 else:
                     if dictionary_cryt_point[k][0]:
-                        str_rise += f'(-∞; {k}] & '
-                        str_fall += f'[{k}; '
+                        str_rise += f'(-∞; {k}) & '
+                        str_fall += f'({k}; '
                     else:
-                        str_fall += f'(-∞; {k}] & '
-                        str_rise += f'[{k}; '
+                        str_fall += f'(-∞; {k}) & '
+                        str_rise += f'({k}; '
             else:
                 if not dictionary_cryt_point[k][2]:
                     if dictionary_cryt_point[k][0]:
@@ -100,30 +104,36 @@ def analysis(func_entry, window, group_type_func, group_type_graph, entry_first_
                     if dictionary_cryt_point[k][0]:
                         # str_rise += f'[{k}; '
                         # str_fall += f'{k}] & '
-                        str_fall += f'[{k}; '
-                        str_rise += f'{k}] & '
+                        str_fall += f'({k}; '
+                        str_rise += f'{k}) & '
                     else:
                         # str_fall += f'[{k}; '
                         # str_rise += f'{k}] & '
-                        str_rise += f'[{k}; '
-                        str_fall += f'{k}] & '
+                        str_rise += f'({k}; '
+                        str_fall += f'{k}) & '
 
         last_point = sorted(dictionary_cryt_point.keys())[-1]               # потім підстановка чи є точка останньою
         if len(dictionary_cryt_point.keys()) == 1:                          # в попередніх рядках була умова допущення
             if not dictionary_cryt_point[last_point][2]:                    # до виразів, якщо кількість критичних точок
                 if dictionary_cryt_point[last_point][0]:                    # більше 0. Якщо ж ні, то жодна з умов не
                     str_rise = f'(-∞; {last_point})'   # виконається. Якщо тільки 1 критична точка,
-                    str_fall = f'({last_point}; +∞)'    # ????????????????
+                    str_fall = f'({last_point}; +∞)'
+                    # str_rise += '+∞)'
                 else:                                                       # то відповідна перевірка буде перевірена
                     str_fall = f'(-∞; {last_point})'   # як в попередньому, але з включенням з
-                    str_rise = f'({last_point}; +∞)'  # ?????????????????
+                    str_rise = f'({last_point}; +∞)'
+                    # str_fall += '+∞)'
             else:                                                           # з додатньою безкінечністю
                 if dictionary_cryt_point[last_point][0]:
-                    str_rise += f'(-∞; {last_point}]'
-                    str_fall += f'[{last_point}; +∞)'
+                    # str_rise += f'(-∞; {last_point}]'
+                    # str_fall += f'[{last_point}; +∞)'
+                    str_rise = str_rise[:-3]
+                    str_fall += '+∞)'
                 else:
-                    str_fall += f'(-∞; {last_point}]'
-                    str_rise += f'[{last_point}; +∞)'
+                    # str_fall += f'(-∞; {last_point}]'
+                    # str_rise += f'[{last_point}; +∞)'
+                    str_rise += '+∞)'
+                    str_fall = str_fall[:-3]
         else:
             if not dictionary_cryt_point[last_point][2]:
                 if dictionary_cryt_point[last_point][0]:
@@ -146,7 +156,7 @@ def analysis(func_entry, window, group_type_func, group_type_graph, entry_first_
                     # str_rise.rstrip(' & ')
                     str_rise += f'[{last_point}; +∞)'
 
-    fprimeprime = str(fprimeprime).replace('x', '(x)')
+    fprimeprime = str(f.diff(x).diff(x)).replace('x', '(x)')
     intervals_concave_convex = []
     if isinstance(intervals_points_concave_convex, list):
         intervals_points_concave_convex = sorted(intervals_points_concave_convex)   # аналогічно з попередніми,
@@ -181,11 +191,11 @@ def analysis(func_entry, window, group_type_func, group_type_graph, entry_first_
                     str_concave += f'({k}; '
             else:
                 if dictionary_inflection_point[k][0]:
-                    str_concave += f'(-∞; {k}] & '
-                    str_convex += f'[{k}; '
+                    str_concave += f'(-∞; {k}) & '
+                    str_convex += f'({k}; '
                 else:
-                    str_convex += f'(-∞; {k}] & '
-                    str_concave += f'[{k}; '
+                    str_convex += f'(-∞; {k}) & '
+                    str_concave += f'({k}; '
         else:
             if not dictionary_inflection_point[k][2]:
                 if dictionary_inflection_point[k][0]:
@@ -196,28 +206,34 @@ def analysis(func_entry, window, group_type_func, group_type_graph, entry_first_
                     str_concave += f'({k}; '
             else:
                 if dictionary_inflection_point[k][0]:
-                    str_concave += f'[{k}; '
-                    str_convex += f'{k}] & '
+                    str_concave += f'({k}; '
+                    str_convex += f'{k}) & '
                 else:
-                    str_convex += f'[{k}; '
-                    str_concave += f'{k}] & '
+                    str_convex += f'({k}; '
+                    str_concave += f'{k}) & '
 
     last_point = sorted(dictionary_inflection_point.keys())[-1]
     if len(dictionary_inflection_point.keys()) == 1:
         if not dictionary_inflection_point[last_point][2]:
             if dictionary_inflection_point[last_point][0]:
-                str_concave += '+∞)'
+                # str_concave += '+∞)'
+                # str_convex = str_convex[:-3]
                 # str_convex += f'({last_point}; '
+                str_concave = f'(-∞; {last_point})'
+                str_convex = f'({last_point}; +∞)'
             else:
-                str_convex += '+∞)'
+                # str_convex += '+∞)'
+                # str_concave = str_concave[:-3]
                 # str_concave += f'({last_point}; '
+                str_convex = f'(-∞; {last_point})'
+                str_concave = f'({last_point}; +∞)'
         else:
             if dictionary_inflection_point[last_point][0]:
-                str_concave += f'(-∞; {last_point}]'
-                str_convex += f'[{last_point}; +∞)'
+                str_concave = f'(-∞; {last_point})'
+                str_convex = f'({last_point}; +∞)'
             else:
-                str_convex += f'[{last_point}; +∞)'
-                str_concave += f'(-∞; {last_point}]'
+                str_convex = f'({last_point}; +∞)'
+                str_concave = f'(-∞; {last_point})'
     else:
         if not dictionary_inflection_point[last_point][2]:
             if dictionary_inflection_point[last_point][0]:
@@ -233,16 +249,16 @@ def analysis(func_entry, window, group_type_func, group_type_graph, entry_first_
                 # str_concave += f'{last_point}]'
                 # # str_convex.rstrip(' & ')
                 # str_convex += f'[{last_point}; +∞)'
-                str_convex += f'{last_point}]'
+                str_convex += f'{last_point})'
                 # str_concave.rstrip(' & ')
-                str_concave += f'[{last_point}; +∞)'
+                str_concave += f'({last_point}; +∞)'
             else:
                 # str_convex += f'{last_point}]'
                 # # str_concave.rstrip(' & ')
                 # str_concave += f'[{last_point}; +∞)'
-                str_concave += f'{last_point}]'
+                str_concave += f'{last_point})'
                 # str_convex.rstrip(' & ')
-                str_convex += f'[{last_point}; +∞)'
+                str_convex += f'({last_point}; +∞)'
 
     analysis_window = tk.Tk()
     analysis_window.title('Analysis')
@@ -256,12 +272,16 @@ def analysis(func_entry, window, group_type_func, group_type_graph, entry_first_
     else:
         lbl_indefinite_points = tk.Label(master=analysis_window,
                                          text=f'Точки невизначеності функції: x є R')
-    if len(cryt_points) == 0:
+    if len(cryt_points) == 0 or len(cryt_points) == len(indefinite_points):
         lbl_crytical_point = tk.Label(master=analysis_window, text=f'Критичні точки: відсутні')
-        if ('x' in str(fprime) and eval(fprime.replace('x', 0)) >= 0) or fprime >= 0:
-            lbl_intervals_rise_fall = tk.Label(master=analysis_window, text=f'При х є R функція зростає\n')
+        if len(indefinite_points) == 0:
+            if ('x' in str(fprime) and eval(fprime.replace('x', '0')) >= 0) or fprime >= 0:
+                lbl_intervals_rise_fall = tk.Label(master=analysis_window, text=f'При х є R функція зростає\n')
+            else:
+                lbl_intervals_rise_fall = tk.Label(master=analysis_window, text=f'При х є R функція спадає\n')
         else:
-            lbl_intervals_rise_fall = tk.Label(master=analysis_window, text=f'При х є R функція спадає\n')
+            lbl_intervals_rise_fall = tk.Label(master=analysis_window, text=f'При х є {str_rise} функція зростає\n'
+                                                                            f'При х є {str_fall} функція спадає')
     else:
         lbl_crytical_point = tk.Label(master=analysis_window, text=f'Критичні точки: {cryt_points_out}')
         lbl_intervals_rise_fall = tk.Label(master=analysis_window, text=f'При х є {str_rise} функція зростає\n'

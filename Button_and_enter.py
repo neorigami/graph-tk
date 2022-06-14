@@ -52,23 +52,23 @@ def check_state(group, key):
         group[key] = 1
         return group
 
-def x_y():
-    global group_type_func
-    group_type_func = check_state(group_type_func, 'x_y')
-    func_func.config(text='x(y)=')
-    but_x_y.config(relief=state_button[group_type_func['x_y']])
-    but_y_x.config(relief=state_button[group_type_func['y_x']])
-    but_polar.config(relief=state_button[group_type_func['r_theta']])
-    but_scat.config(state='normal')
-    but_line.config(state='normal')
-    but_anal.config(state='normal')
+# def x_y():
+#     global group_type_func
+#     group_type_func = check_state(group_type_func, 'x_y')
+#     func_func.config(text='x(y)=')
+#     but_x_y.config(relief=state_button[group_type_func['x_y']])
+#     but_y_x.config(relief=state_button[group_type_func['y_x']])
+#     but_polar.config(relief=state_button[group_type_func['r_theta']])
+#     but_scat.config(state='normal')
+#     but_line.config(state='normal')
+#     but_anal.config(state='normal')
 
 
 def y_x():
     global group_type_func
     group_type_func = check_state(group_type_func, 'y_x')
     func_func.config(text='y(x)=')
-    but_x_y.config(relief=state_button[group_type_func['x_y']])
+    # but_x_y.config(relief=state_button[group_type_func['x_y']])
     but_y_x.config(relief=state_button[group_type_func['y_x']])
     but_polar.config(relief=state_button[group_type_func['r_theta']])
     but_scat.config(state='normal')
@@ -79,7 +79,7 @@ def y_x():
 def r_theta():
     global group_type_func, group_type_graph
     group_type_func = check_state(group_type_func, 'r_theta')
-    but_x_y.config(relief=state_button[group_type_func['x_y']])
+    # but_x_y.config(relief=state_button[group_type_func['x_y']])
     but_y_x.config(relief=state_button[group_type_func['y_x']])
     but_polar.config(relief=state_button[group_type_func['r_theta']])
     if group_type_func['r_theta']:
@@ -140,11 +140,12 @@ def show_instruction():
     # lbl_instr_7.grid(row=6, column=0, sticky='w', pady=2)
     # instruction_window.mainloop()
     instruction_window = tk.Tk()
-    canvas = tk.Canvas(instruction_window, height=700, width=1000)
+    canvas = tk.Canvas(master=instruction_window, height=700, width=1000)
     # image = Image.open("loudly-crying-face_1f62d.png")
-    image = tk.PhotoImage(file="loudly-crying-face_1f62d.png")
+    image = tk.PhotoImage(master=instruction_window, file="loudly-crying-face_1f62d.png")
     canvas.pack(fill='both')
     canvas.create_image(0, 0, anchor='nw', image=image)
+    # tk.Label(master=instruction_window, image=image).pack()
     # canvas.grid(row=0, column=0)
     instruction_window.mainloop()
 
@@ -165,15 +166,15 @@ lbl_type_func = tk.Label(master=window, text="Type of function")
 
 but_y_x = tk.Button(
     master=window,
-    text="y(x)=x",
+    text="Decart",
     command=y_x,
     relief=tk.RAISED
 )
-but_x_y = tk.Button(
-    master=window,
-    text="x(y)=y",
-    command=x_y
-)
+# but_x_y = tk.Button(
+#     master=window,
+#     text="x(y)=y",
+#     command=x_y
+# )
 but_polar = tk.Button(
     master=window,
     text='Polar',
@@ -226,7 +227,7 @@ but_instruction = tk.Button(
 
 # state of press dictionary
 # lbl_flag = False
-group_type_func = {'y_x': 0, 'x_y': 0, 'r_theta': 0}
+group_type_func = {'y_x': 0, 'r_theta': 0}
 group_type_graph = {'scatter': 0, 'line': 0, 'polar': 0}
 state_button = {1: tk.GROOVE, 0: tk.RAISED}
 
@@ -237,7 +238,7 @@ func_entry.grid(row=2, column=1, sticky='w')
 func_func.grid(row=2, column=0, sticky='e')
 lbl_type_func.grid(row=3, column=1, padx=10, pady=5)
 but_y_x.grid(row=4, column=0, padx=10, sticky='e')
-but_x_y.grid(row=4, column=1, padx=10)
+# but_x_y.grid(row=4, column=1, padx=10)
 but_polar.grid(row=4, column=2, padx=10, sticky='w')
 lbl_type_graph.grid(row=5, column=1, padx=10, pady=5)
 but_line.grid(row=6, column=0, padx=10, sticky='e')

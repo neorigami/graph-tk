@@ -4,6 +4,7 @@ import numpy as np
 from math import *
 import re
 import tkinter.messagebox as MessageBox
+import sympy
 
 
 def is_digit(*args):           # перевірка на число
@@ -26,29 +27,37 @@ def check_zero_division(string):                # перевірка на при
 def check_interval(x0, xn, step):               # перевірка на число інтервали і крок
     if not is_digit(x0, xn, step):
         return True
-    x0, xn, step = float(x0), float(xn), float(step)
-    if x0 > xn and step >= 0 or xn > x0 and step <= 0:
+    x0, xn, step = float(x0), float(xn), float(step)                        # перевірка правильного введення
+    if (x0 > xn and step >= 0) or (xn > x0 and step <= 0) or step == 0:       # інтервалу і кроку на безкінечність
         return True
 
 
+def find_roots(func):
+    func = func[1:]
+    x = sympy.Symbol('x')
+    func = eval(func)
+    root_x = []
+    for i in sympy.solve(func, x):
+        try:
+            root_x.append(eval(str(i)))
+        except:
+            pass
+    return root_x
+
+
 class Graph:
+    sympy.init_printing(use_unicode=True)
     def __init__(self, func, type_func, type_graph, first_point, last_point, step):
         self.type_func = type_func
         self.type_graph = type_graph
         if check_interval(first_point, last_point, step):
-            self.error = 'Incorrect input interval'
+            self.error = 'Incorrect input interval or step'
             raise self.func_error()
         self.first_point = float(first_point)
         self.last_point = float(last_point)
         self.step = float(step)
         # before initiate func
-        if type_func == 'x_y':                # перевірка на введення, залежно від типу функції, змінної
-            if 'y' not in func:
-                self.error = "Input function error. Function without 'y'"
-                raise self.func_error()
-            self.func = str(func).replace('y', 'x')
-
-        elif type_func == 'y_x':
+        if type_func == 'y_x':                  # перевірка на введення, залежно від типу функції, змінної
             if 'x' not in func:
                 self.error = "Input function error. Function without 'x'"
                 raise self.func_error()
@@ -86,9 +95,6 @@ class Graph:
             for m in re.findall(r'sqrt\(.*?\(x\)[+-]?\d*\.?\d*\)+', self.func):     # зайвого повторення тих самих дій
                 self.func = self.func.replace(m, f'{m[4:]}**0.5', 1)
         # end of initiate func
-        if (self.last_point < self.first_point and step > 0) or self.step == 0:     # перевірка правильного введення
-            self.error = 'Step error. Impossible to build graph '                   # інтервалу і кроку на безкінечність
-            raise self.func_error()
         self.y = []
         self.x = []
         self.graph_func = plt                       # ініціалізація об'єкта matplotlib
@@ -132,28 +138,19 @@ class Graph:
             self.scatter()
         elif self.type_graph == 'line':         # по лініях
             self.line()
-        elif self.type_graph == "polar":
+        elif self.type_graph == "polar":        # в полярній системі по точках
             self.polar()
 
     def scatter(self):
-        if self.type_func == 'y_x':             # побудова у(х)
-            self.graph_func.scatter(x=self.x, y=self.y, c='blue')
-            self.graph_func.xlabel("x")
-            self.graph_func.ylabel("y(x)")
-        if self.type_func == 'x_y':            # побудова х(у)
-            self.graph_func.scatter(x=self.y, y=self.x, c='blue')
-            self.graph_func.xlabel("y")
-            self.graph_func.ylabel("x")
+        # побудова у(х)
+        self.graph_func.scatter(x=self.x, y=self.y, c='blue')
+        self.graph_func.xlabel("x")
+        self.graph_func.ylabel("y(x)")
 
     def line(self):
-        if self.type_func == 'y_x':
-            self.graph_func.plot(self.x, self.y, c='blue')
-            self.graph_func.xlabel("x")
-            self.graph_func.ylabel("y(x)")
-        if self.type_func == 'x_y':
-            self.graph_func.plot(self.y, self.x, c='blue')
-            self.graph_func.xlabel("y")
-            self.graph_func.ylabel("x")
+        self.graph_func.plot(self.x, self.y, c='blue')
+        self.graph_func.xlabel("x")
+        self.graph_func.ylabel("y(x)")
 
     def polar(self):
         self.graph_func = self.graph_func.figure()
@@ -163,38 +160,12 @@ class Graph:
 
     def check_sqrt(self):
         for m in re.findall(r'\(.*?\(?x\)?[+-]?\d*\.?\d*\)+\*\*0.\d+', self.func):  # перевірка на наявінсть х в степені менше 1
-            multipliers_x = []                                              # для відкидування проміжків невизначеності функції,
+            # multipliers_x = []                                              # для відкидування проміжків невизначеності функції,
             #                                                               # при яких вираз під степенем менше 0
-            if re.search(r'\*\*\d+', m[:m.rfind(')')]):                                    # перевірка на наявінсть х в степені
-                x_power_max = int(re.search(r'\*\*\d+', m).group(0)[2:])    # визначення максимального степеня
-                flag = x_power_max                                          # передача максимального степені новій змінній
-                for m2 in re.findall(r'[+-]?\d+\.?\d*\*\(x\)\*\*\d+', m):   # якщо є пропущенні степені, вони добавляються
-                    flag_new = int(re.search(r'\*\*\d+', m2).group(0)[2:])  # у масив як нулі, щоб через numpy розрахувати
-                    while flag != flag_new:                                 # корені рівняння x^n степенях
-                        multipliers_x.append(0)                             #
-                        flag -= 1                                           # в рядку 172 визначається степінь наступного х
-                    multipliers_x.append(m2[:m2.find('*')])                 # якщо він не дорівнює максимальному, то додається
-                    flag -= 1                                               # до масиву 0, і віднімається від прапорця 1, поки не досягне значення степеня х
-                while len(multipliers_x) != x_power_max - 1:                # якщо розмір масиву менщий за максимальний степінь - 1,
-                    multipliers_x.append(0)                                 # то масив заповнюється 0-ами поки не буде рівний
-                if re.search(r'\d[+-]\d+\.?\d*\*\(x\)[^*]?.*?\)', m):       # визначення останнього х в степені 1
-                    num_x = re.search(r'\d[+-]\d+\.?\d*\*\(x\)[^*]?.*?\)', m).group(0)
-                    multipliers_x.append(num_x[1:num_x.find('*')])          # додавання множника х до масиву, якщо є
-                else:
-                    multipliers_x.append(0)  # 515.2115*x**5+2*x+8)                                # інакше додавання 0-ля
-            else:
-                num_x = re.search(r'[+-]?\d+\.?\d*\*\(x\)', m).group(0)     # якщо вираз типу а*х+b
-                multipliers_x.append(num_x[:num_x.find('*')])               # знаходження множника х і додавання в масив
-            if re.search(r'\)?\d?[+-]\d+\.?\d*\)', m):                     # знаходження b для обох випадків однаково
-                m2 = re.search(r'\)?\d?[+-]\d+\.?\d*\)', m)
-                multipliers_x.append(m2.group(0)[1:-1])
-            else:
-                multipliers_x.append(0)
+            root_x = find_roots(m[:m.rfind(')')])
 
-            multipliers_x = [float(i) for i in multipliers_x]
-            root_points = np.roots(multipliers_x)                       # знаходження коренів
             root_points = list(
-                sorted([round(i, 2) for i in root_points if not isinstance(i, complex)]))   # відсіювання ірраціональних коренів і обрізання чисел після коми
+                sorted([round(i, 2) for i in root_x]))   # відсіювання ірраціональних коренів і обрізання чисел після коми
             list_plus_minus = []
             if len(root_points) == 1:                                                       # якщо така точка одна, значить тільки в одному боці від точки функція на всьому проміжку не визначена
                 list_plus_minus.append([eval(m[m.find('('):m.rfind(')') + 1].replace('x', str(root_points[0] - 1))) > 0, True])    # ключова різниця між цим методом check_sqrt і check_log
@@ -219,36 +190,9 @@ class Graph:
 
     def check_log(self):               # див попередній метод класу
         for m in re.findall(r'log\(.*?\(x\)[+-]?\d*\.?\d*, ?[0-9e]+\)+', self.func):
-            multipliers_x = []
-            if re.search(r'\*\*\d+', m):
-                x_power_max = int(re.search(r'\*\*\d+', m).group(0)[2:])
-                flag = x_power_max
-                for m2 in re.findall(r'[+-]?\d+\.?\d*\*\(x\)\*\*\d+', m):
-                    flag_new = int(re.search(r'\*\*\d+', m2).group(0)[2:])
-                    while flag != flag_new:
-                        multipliers_x.append(0)
-                        flag -= 1
-                    multipliers_x.append(m2[:m2.find('*')])
-                    flag -= 1
-                while len(multipliers_x) != x_power_max - 1:
-                    multipliers_x.append(0)
-                if re.search(r'\d[+-]\d+\.?\d*\*\(x\)[^*]?.*?\)', m):
-                    num_x = re.search(r'\d[+-]\d+\.?\d*\*\(x\)[^*]?.*?\)', m).group(0)
-                    multipliers_x.append(num_x[1:num_x.find('*')])
-                else:
-                    multipliers_x.append(0)
-            else:
-                num_x = re.search(r'[+-]?\d+\.?\d*\*\(x\)', m).group(0)
-                multipliers_x.append(num_x[:num_x.find('*')])
-            if re.search(r'\)?\d?[+-]\d+\.?\d*\)', m):
-                m2 = re.search(r'\)?\d[+-]?\d+\.?\d*\)', m)
-                multipliers_x.append(m2.group(0)[1:-1])
-            else:
-                multipliers_x.append(0)
+            roots_x = find_roots(m[m.find('('):m.rfind(',')])
 
-            multipliers_x = [float(i) for i in multipliers_x]
-            root_points = np.roots(multipliers_x)
-            root_points = list(sorted([round(i, self.presicion) for i in root_points if not isinstance(i, complex)]))
+            root_points = list(sorted([round(i, self.presicion) for i in roots_x]))
             list_rise_fall = []
             if len(root_points) == 1:
                 list_rise_fall.append([eval(m[4:m.find(',')].replace('x', str(root_points[0]-1))) > 0, False])
@@ -300,36 +244,11 @@ class Graph:
 
     def analysis_data(self, func: str):                 # аналіз функції перед побудовою, перше це перевірка на наявність дробів з х
         gap_all = []
-        for m in re.findall(r'/ ?\([+-]?.*?\(x\).*?[+-]?\d*\.?\d*\)+\)?', self.func):   # схоже на методи визначення коренів у check_sqrt i check_log
-            multipliers_x = []                                                          # тільки тут не проміжки а тільки точки
-            if re.search(r'\*\*\d', m):
-                x_power_max = int(re.search(r'\*\*\d+', m).group(0)[2:])
-                flag = x_power_max
-                for m2 in re.findall(r'[+-]?\d+\.?\d*\*\(x\)\*\*\d+', m):
-                    flag_new = int(re.search(r'\*\*\d+', m2).group(0)[2:])
-                    while flag != flag_new:
-                        multipliers_x.append(0)
-                        flag -= 1
-                    multipliers_x.append(m2[:m2.find('*')])
-                    flag -= 1
-                while len(multipliers_x) != x_power_max - 1:
-                    multipliers_x.append(0)
-                if re.search(r'\d[+-]\d+\.?\d*\*\(x\)[^*]?.*?\)', m):
-                    num_x = re.search(r'\d[+-]\d+\.?\d*\*\(x\)[^*]?.*?\)', m).group(0)
-                    multipliers_x.append(num_x[1:num_x.find('*')])
-                else:
-                    multipliers_x.append(0)
-            else:
-                num_x = re.search(r'[+-]?\d+\.?\d*\*\(x\)', m).group(0)
-                multipliers_x.append(num_x[:num_x.find('*')])
-            if re.search(r'\)?\d?[+-]\d+\.?\d*\)', m):
-                m2 = re.search(r'\)?\d[+-]?\d+\.?\d*\)', m)
-                multipliers_x.append(m2.group(0)[1:-1])
-            else:
-                multipliers_x.append(0)
-            multipliers_x = [float(i) for i in multipliers_x]
-            gap_points = np.roots(multipliers_x)
-            gap_all.extend(gap_points)
+        for m in re.findall(r'/ ?\([+-]?.*?\(x\)[+-]?\d*\.?\d*\)+\)?', self.func):   # схоже на методи визначення коренів у check_sqrt i check_log
+            # multipliers_x = []                                                          # тільки тут не проміжки а тільки точки
+            root_x = find_roots(m)
+
+            gap_all.extend(root_x)
         if '/sin' in self.func:                # в синусі і косинусі пошук коренів тільки в межах інтервалу, і тільки для виразів а*х+b
             gap_sin = []
             for m in re.findall(r'/sin\([+-]?\d*\.?\d*\*?\(x\)[+-]?\d*\.?\d*\)', self.func):
@@ -373,7 +292,7 @@ class Graph:
 
     def calculate_func(self, func: str, x1: float, xn: float, step: float):    # внесення  точок в масиви x і у для побудови
 
-        if re.findall(r'/ ?\(.*?\(x\)[+-]?\d*\.?\d*\)+', func)\
+        if re.findall(r'/\(.*?\(x\)(\*\*\d+)?[+-]?\d*\.?\d*\)+', func)\
                 or '/sin' in func or '/cos' in func:
             root_point = sorted(self.analysis_data(func))       # при наявності виразів, що вносять розриви, створюється
             root_point = [i for i in root_point if i >= x1]     # масив цих точок, відсіюються ті, що менші першої точки інтервалу
