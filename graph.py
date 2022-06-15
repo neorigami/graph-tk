@@ -77,22 +77,22 @@ class Graph:
             for m in re.findall(r'\|.*?\|', self.func): # tag(2*x**3+9*(x)**2+9*(x))+(4135+9*x-2*x**2)-tag(6*x+9)
                 self.func = self.func.replace(m, f'abs({m[1:-1]})', 1)
         if 'tan' in self.func:                          # розкладання тангенса на синус/косинус
-            for m in re.findall(r'tan\([+-]?.*?\(x\)[+-]?\d*\.?\d*\)+\)?', self.func):
+            for m in re.findall(r'tan\(.*?\(?x\)?(?:\*\*\d+[+-]\d+\.?\d*\)|\*\*\d+\)|[-+]\d+\.?\d*\)|\))', self.func):
                 self.func = self.func.replace(m, f'(sin{m[3:]})/cos{m[3:]}', 1)
         if 'ctg' in self.func:                          # розкладання тангенса на косинус/синус
-            for m in re.findall(r'ctg\([+-]?.*?\(x\)[+-]?\d*\.?\d*\)+\)?', self.func):
+            for m in re.findall(r'ctg\(.*?\(?x\)?(?:\*\*\d+[+-]\d+\.?\d*\)|\*\*\d+\)|[-+]\d+\.?\d*\)|\))', self.func):
                 self.func = self.func.replace(m, f'(cos{m[3:]})/sin{m[3:]}', 1)
         if 'log' in self.func:                          # переведення скороченого формату логарифму на зручний програмі
-            for m in re.findall(r'log\([+-]?.*?\(x\)[+-]?\d*\.?\d*\)+\)?', self.func):  # для обробки
+            for m in re.findall(r'log\(.*?\(?x\)?(?:\*\*\d+[+-]\d+\.?\d*\)|\*\*\d+\)|[-+]\d+\.?\d*\)|\))', self.func):  # для обробки
                 self.func = self.func.replace(m, f'{m[:-1]}, 2)', 1)
         if 'lg' in self.func:                           # аналогічно
-            for m in re.findall(r'lg\([+-]?.*?\(x\)[+-]?\d*\.?\d*\)+\)?', self.func):
+            for m in re.findall(r'lg\(.*?\(?x\)?(?:\*\*\d+[+-]\d+\.?\d*\)|\*\*\d+\)|[-+]\d+\.?\d*\)|\))', self.func):
                 self.func = self.func.replace(m, f'log{m[2:-1]}, 10)', 1)
         if 'ln' in self.func:                           # аналогічно
-            for m in re.findall(r'ln\([+-]?.*?\(x\)[+-]?\d*\.?\d*\)+\)?', self.func):
+            for m in re.findall(r'ln\(.*?\(?x\)?(?:\*\*\d+[+-]\d+\.?\d*\)|\*\*\d+\)|[-+]\d+\.?\d*\)|\))', self.func):
                 self.func = self.func.replace(m, f'log{m[2:-1]}, e)', 1)
         if 'sqrt' in self.func:                         # переведення формату в зручний для програми формі, щоб уникнути
-            for m in re.findall(r'sqrt\(.*?\(x\)[+-]?\d*\.?\d*\)+', self.func):     # зайвого повторення тих самих дій
+            for m in re.findall(r'sqrt\(.*?\(?x\)?(?:\*\*\d+[+-]\d+\.?\d*\)|\*\*\d+\)|[-+]\d+\.?\d*\)|\))', self.func):     # зайвого повторення тих самих дій
                 self.func = self.func.replace(m, f'{m[4:]}**0.5', 1)
         # end of initiate func
         self.y = []
@@ -106,7 +106,7 @@ class Graph:
             self.presicion = 2
         # For analysis acceptable x (for log(ax**2+bx+c, e)
         sqrt_is, log_is = False, False              # визначення недопустимих для побудови проміжків функції
-        if re.search(r'\(.*?\(?x\)?[+-]?\d*\.?\d*\)+\*\*0\.\d+', self.func):
+        if re.search(r'\(.*?\)+\*\*0\.\d+', self.func):
             self.root_points_sqrt, self.list_plus_minus_sqrt, self.dictionary_plus_minus_plots_sqrt = self.check_sqrt()
             sqrt_is = True
         if re.search(r'log', self.func):
@@ -161,7 +161,7 @@ class Graph:
     def arcsin_arccos_points(self):
         allowed_points = []
         if 'asin' in self.func:
-            for m in re.findall(r'asin\(.*?\(x\)(\*\*\d+)?[+-]?\d*\.?\d*\)+', self.func):
+            for m in re.findall(r'asin\(.*?\(?x\)?(?:\*\*\d+[+-]\d+\.?\d*\)|\*\*\d+\)|[-+]\d+\.?\d*\)|\))', self.func):
                 m = m[m.find('('):]
                 local_allowed_points = []
                 x0, xn, step = self.first_point, self.last_point, self.step
@@ -172,7 +172,7 @@ class Graph:
                     x0 += step
                 allowed_points.extend(local_allowed_points)
         if 'acos' in self.func:
-            for m in re.findall(r'acos\(.*?\(x\)(\*\*\d+)?[+-]?\d*\.?\d*\)+', self.func):
+            for m in re.findall(r'acos\(.*?\(?x\)?(?:\*\*\d+[+-]\d+\.?\d*\)|\*\*\d+\)|[-+]\d+\.?\d*\)|\))', self.func):
                 m = m[m.find('('):]
                 local_allowed_points = []
                 x0, xn, step = self.first_point, self.last_point, self.step
@@ -207,7 +207,7 @@ class Graph:
         return True
 
     def check_sqrt(self):
-        for m in re.findall(r'\(.*?\(?x\)?(\*\*\d+)?[+-]?\d*\.?\d*\)+\*\*0.\d+', self.func):  # перевірка на наявінсть х в степені менше 1
+        for m in re.findall(r'\(.*?\)+\*\*0.\d+', self.func):  # перевірка на наявінсть х в степені менше 1
             # multipliers_x = []                                              # для відкидування проміжків невизначеності функції,
             #                                                               # при яких вираз під степенем менше 0
             root_x = find_roots(m[:m.rfind(')')])
@@ -237,17 +237,30 @@ class Graph:
         return root_points, list_plus_minus, dictionary_plus_minus_plots
 
     def check_log(self):               # див попередній метод класу
-        for m in re.findall(r'log\(.*?\(x\)(\*\*\d+)?[+-]?\d*\.?\d*, ?[0-9e]+\)+', self.func):
+        for m in re.findall(r'log\(.*?, ?[0-9e]+\)', self.func):
             roots_x = find_roots(m[m.find('('):m.rfind(',')])
 
             root_points = list(sorted([round(i, self.presicion) for i in roots_x]))
             list_rise_fall = []
-            if len(root_points) == 1:
-                list_rise_fall.append([eval(m[4:m.find(',')].replace('x', str(root_points[0]-1))) > 0, False])
-                list_rise_fall.append([eval(m[4:m.find(',')].replace('x', str(root_points[0]+1))) > 0, False])
-            elif len(root_points) == 0:
-                list_rise_fall.append([eval(m[4:m.find(',')].replace('x', '0')) > 0, False])
-            else:
+            # if len(root_points) == 1:
+            #     list_rise_fall.append([eval(m[4:m.find(',')].replace('x', str(root_points[0]-1))) > 0, False])
+            #     list_rise_fall.append([eval(m[4:m.find(',')].replace('x', str(root_points[0]+1))) > 0, False])
+            # elif len(root_points) == 0:
+            #     list_rise_fall.append([eval(m[4:m.find(',')].replace('x', '0')) > 0, False])
+            # else:
+            #     for i in range(len(root_points)):
+            #         if i == 0:
+            #             calculate_point = root_points[i] - 1
+            #             list_rise_fall.append([eval(m[4:m.find(',')].replace('x', str(calculate_point))) > 0, False])
+            #             # print(eval(m[4:m.find(',')].replace('x', str(calculate_point))))
+            #         elif i == len(root_points)-1:
+            #             calculate_point = root_points[i] + 1
+            #             list_rise_fall.append([eval(m[4:m.find(',')].replace('x', str(calculate_point))) > 0, False])
+            #             # print(eval(m[4:m.find(',')].replace('x', str(calculate_point))))
+            #             break
+            #         calculate_point = root_points[i] + (root_points[i+1]-root_points[i]) / 2
+            #         list_rise_fall.append([eval(m[4:m.find(',')].replace('x', str(calculate_point))) > 0, False])
+            if len(root_points) > 1:
                 for i in range(len(root_points)):
                     if i == 0:
                         calculate_point = root_points[i] - 1
@@ -258,17 +271,20 @@ class Graph:
                         list_rise_fall.append([eval(m[4:m.find(',')].replace('x', str(calculate_point))) > 0, False])
                         # print(eval(m[4:m.find(',')].replace('x', str(calculate_point))))
                         break
-
                     calculate_point = root_points[i] + (root_points[i+1]-root_points[i]) / 2
-                    # list_rise_fall.append(eval(m[4:m.find(',')].replace('x', str(calculate_point))) > 0)
                     list_rise_fall.append([eval(m[4:m.find(',')].replace('x', str(calculate_point))) > 0, False])
+            elif len(root_points) == 1:
+                list_rise_fall.append([eval(m[4:m.find(',')].replace('x', str(root_points[0] - 1))) > 0, False])
+                list_rise_fall.append([eval(m[4:m.find(',')].replace('x', str(root_points[0] + 1))) > 0, False])
+            else:
+                list_rise_fall.append([eval(m[4:m.find(',')].replace('x', '0')) > 0, False])
 
             dictionary_rise_fall_plots = {k: v for k, v in zip(root_points, list_rise_fall[:-1])}
             return root_points, list_rise_fall, dictionary_rise_fall_plots
 
     def analysis_log_sqrt_x(self, x):                                # тут складно
-        if not self.root_points:                            # якщо нема коренів то далі умова не приходить і переходить
-            return False                                    # до наступної
+        # if not self.root_points:                            # якщо нема коренів то далі умова не приходить і переходить
+        #     return False                                    # до наступної
         if len(self.root_points) == 0:                      # якщо коренів нема
             if not self.list_plus_minus[0][0]:                  # і функція невизначена при будь якому х, то викликається виключення
                 self.error = 'Unresolved expression under log'
@@ -278,7 +294,7 @@ class Graph:
         for i in range(len(self.root_points)):
             if x < self.root_points[i] and self.dictionary_plus_minus_plots[self.root_points[i]][0]:  # якщо х менший кореня і проміжок дійсний
                 return x
-            elif not self.dictionary_plus_minus_plots[self.root_points[i]][0]:       # якщо х більший, і проміжок не дійсний
+            elif not self.dictionary_plus_minus_plots[self.root_points[i]][0] or x == self.root_points[i]:       # якщо х більший, і проміжок не дійсний
                 if self.dictionary_plus_minus_plots[self.root_points[i]][1]:         # визначення чи точка включно, в цьому рядку включно
                     while x < self.root_points[i]:                                  # поки х менший за наступний корінь,
                         x += self.step                                              # додається крок поки не буде більшим чи рівним
@@ -292,14 +308,14 @@ class Graph:
 
     def analysis_data(self, func: str):                 # аналіз функції перед побудовою, перше це перевірка на наявність дробів з х
         gap_all = []
-        for m in re.findall(r'/ ?\([+-]?.*?\(x\)(\*\*\d+)?[+-]?\d*\.?\d*\)+\)?', self.func):   # схоже на методи визначення коренів у check_sqrt i check_log
+        for m in re.findall(r'/\(.*?\(?x\)?(?:\*\*\d+[+-]\d+\.?\d*\)|\*\*\d+\)|[-+]\d+\.?\d*\)|\))', self.func):   # схоже на методи визначення коренів у check_sqrt i check_log
             # multipliers_x = []                                                          # тільки тут не проміжки а тільки точки
             root_x = find_roots(m)
 
             gap_all.extend(root_x)
         if '/sin' in self.func:                # в синусі і косинусі пошук коренів тільки в межах інтервалу, і тільки для виразів а*х+b
             gap_sin = []
-            for m in re.findall(r'/sin\([+-]?\d*\.?\d*\*?\(x\)[+-]?\d*\.?\d*\)', self.func):
+            for m in re.findall(r'/sin\(.*?\(?x\)?(?:\*\*\d+[+-]\d+\.?\d*\)|\*\*\d+\)|[-+]\d+\.?\d*\)|\))', self.func):
                 if re.search(r'\([+-]?\d*\.?\d*\*?\(x', m):
                     a = float(re.search(r'\([+-]?\d+\.?\d*\*', m).group(0)[1:-1])       # при наявності а, визначає його
                 else:
@@ -318,7 +334,7 @@ class Graph:
 
         if '/cos' in self.func:
             gap_cos = []
-            for m in re.findall(r'/cos\([+-]?\d*\.?\d*\*?\(x\)[+-]?\d*\.?\d*\)', self.func):
+            for m in re.findall(r'/cos\(.*?\(?x\)?(?:\*\*\d+[+-]\d+\.?\d*\)|\*\*\d+\)|[-+]\d+\.?\d*\)|\))', self.func):
                 if re.search(r'\([+-]?\d*\.?\d*\*?\(x', m):
                     a = float(re.search(r'\([+-]?\d+\.?\d*\*', m).group(0)[1:-1])
                 else:
@@ -344,7 +360,7 @@ class Graph:
             arc_flag = True
             allowed_points_intervals = self.arcsin_arccos_points()
 
-        if re.findall(r'/\(.*?\(x\)(\*\*\d+)?[+-]?\d*\.?\d*\)+', func)\
+        if re.findall(r'/\(.*?\(?x\)?(?:\*\*\d+[+-]\d+\.?\d*\)|\*\*\d+\)|[-+]\d+\.?\d*\)|\))', func)\
                 or '/sin' in func or '/cos' in func:
             root_point = sorted(self.analysis_data(func))       # при наявності виразів, що вносять розриви, створюється
             root_point = [i for i in root_point if i >= x1]     # масив цих точок, відсіюються ті, що менші першої точки інтервалу
@@ -358,7 +374,7 @@ class Graph:
                     self.y = []
                     x += step
                     continue
-                if re.search(r'log', self.func) or re.search(r'\(.*?\(?x\)?(\*\*\d+)?[+-]?\d*\.?\d*\)+\*\*0.\d+', self.func):
+                if re.search(r'log', self.func) or re.search(r'\(.*?\)+\*\*0.\d+', self.func):
                     if self.analysis_log_sqrt_x(x) == 'False':  # якщо функція більше не визначеня, зупиняється побудова
                         self.which_to_plot()
                         break
@@ -394,7 +410,8 @@ class Graph:
                     self.y = []
                     x += step
                     continue
-                if re.search(r'log', self.func) or re.search(r'\(.*?\(?x\)?[+-]?\d*\.?\d*\)+\*\*0.\d+', self.func):
+                if re.search(r'log', self.func) or re.search(r'\(.*?\)+\*\*0.\d+', self.func):
+
                     if self.analysis_log_sqrt_x(x) == 'False':
                         self.which_to_plot()
                         break
