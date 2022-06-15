@@ -158,8 +158,56 @@ class Graph:
         for x, y in zip(self.x, self.y):
             self.ax.scatter(x, y, color='blue')
 
+    def arcsin_arccos_points(self):
+        allowed_points = []
+        if 'asin' in self.func:
+            for m in re.findall(r'asin\(.*?\(x\)(\*\*\d+)?[+-]?\d*\.?\d*\)+', self.func):
+                m = m[m.find('('):]
+                local_allowed_points = []
+                x0, xn, step = self.first_point, self.last_point, self.step
+                while x0 <= xn:
+                    solve = eval(m.replace('x', str(x0)))
+                    if -1 < solve < 1:
+                        local_allowed_points.append(x0)
+                    x0 += step
+                allowed_points.extend(local_allowed_points)
+        if 'acos' in self.func:
+            for m in re.findall(r'acos\(.*?\(x\)(\*\*\d+)?[+-]?\d*\.?\d*\)+', self.func):
+                m = m[m.find('('):]
+                local_allowed_points = []
+                x0, xn, step = self.first_point, self.last_point, self.step
+                while x0 <= xn:
+                    solve = eval(m.replace('x', str(x0)))
+                    if -1 < solve < 1:
+                        local_allowed_points.append(x0)
+                    x0 += step
+                allowed_points.extend(local_allowed_points)
+        allowed_points = [round(i, self.presicion) for i in allowed_points]
+        first_x = allowed_points[0]
+        i = 1
+        next_x = allowed_points[i]
+        allowed_points_intervals = []
+        while next_x != allowed_points[-1]:
+            if allowed_points[i+1] - allowed_points[i] > step*1.1:
+                allowed_points_intervals.append([first_x, next_x])
+                first_x = allowed_points[i+1]
+            i += 1
+            next_x = allowed_points[i]
+        else:
+            # if allowed_points[i-1] - allowed_points[i] < step*1.1:
+            allowed_points_intervals.append([first_x, next_x])
+        return allowed_points_intervals
+
+    def check_x_by_arc(self, intervals, x):
+        for interval in intervals:
+            if interval[0] < x < interval[1]:
+                pass
+            else:
+                return False
+        return True
+
     def check_sqrt(self):
-        for m in re.findall(r'\(.*?\(?x\)?[+-]?\d*\.?\d*\)+\*\*0.\d+', self.func):  # перевірка на наявінсть х в степені менше 1
+        for m in re.findall(r'\(.*?\(?x\)?(\*\*\d+)?[+-]?\d*\.?\d*\)+\*\*0.\d+', self.func):  # перевірка на наявінсть х в степені менше 1
             # multipliers_x = []                                              # для відкидування проміжків невизначеності функції,
             #                                                               # при яких вираз під степенем менше 0
             root_x = find_roots(m[:m.rfind(')')])
@@ -189,7 +237,7 @@ class Graph:
         return root_points, list_plus_minus, dictionary_plus_minus_plots
 
     def check_log(self):               # див попередній метод класу
-        for m in re.findall(r'log\(.*?\(x\)[+-]?\d*\.?\d*, ?[0-9e]+\)+', self.func):
+        for m in re.findall(r'log\(.*?\(x\)(\*\*\d+)?[+-]?\d*\.?\d*, ?[0-9e]+\)+', self.func):
             roots_x = find_roots(m[m.find('('):m.rfind(',')])
 
             root_points = list(sorted([round(i, self.presicion) for i in roots_x]))
@@ -244,7 +292,7 @@ class Graph:
 
     def analysis_data(self, func: str):                 # аналіз функції перед побудовою, перше це перевірка на наявність дробів з х
         gap_all = []
-        for m in re.findall(r'/ ?\([+-]?.*?\(x\)[+-]?\d*\.?\d*\)+\)?', self.func):   # схоже на методи визначення коренів у check_sqrt i check_log
+        for m in re.findall(r'/ ?\([+-]?.*?\(x\)(\*\*\d+)?[+-]?\d*\.?\d*\)+\)?', self.func):   # схоже на методи визначення коренів у check_sqrt i check_log
             # multipliers_x = []                                                          # тільки тут не проміжки а тільки точки
             root_x = find_roots(m)
 
@@ -291,6 +339,10 @@ class Graph:
         return gap_all  # всі повторювані розриви знищуються, і масив впорядковується, комплексні відсіюються
 
     def calculate_func(self, func: str, x1: float, xn: float, step: float):    # внесення  точок в масиви x і у для побудови
+        arc_flag = False
+        if 'asin' in func or 'acos' in func:
+            arc_flag = True
+            allowed_points_intervals = self.arcsin_arccos_points()
 
         if re.findall(r'/\(.*?\(x\)(\*\*\d+)?[+-]?\d*\.?\d*\)+', func)\
                 or '/sin' in func or '/cos' in func:
@@ -300,7 +352,13 @@ class Graph:
             x = x1
 
             while x <= xn:
-                if re.search(r'log', self.func) or re.search(r'\(.*?\(?x\)?[+-]?\d*\.?\d*\)+\*\*0.\d+', self.func):
+                if arc_flag and not self.check_x_by_arc(allowed_points_intervals, x):
+                    self.which_to_plot()
+                    self.x = []
+                    self.y = []
+                    x += step
+                    continue
+                if re.search(r'log', self.func) or re.search(r'\(.*?\(?x\)?(\*\*\d+)?[+-]?\d*\.?\d*\)+\*\*0.\d+', self.func):
                     if self.analysis_log_sqrt_x(x) == 'False':  # якщо функція більше не визначеня, зупиняється побудова
                         self.which_to_plot()
                         break
@@ -330,6 +388,12 @@ class Graph:
         else:       # якщо нема дробів, то визначення на логарифм і вирази з х степеня менше 1 залишається на перевірку
             x = x1
             while x <= xn:
+                if arc_flag and not self.check_x_by_arc(allowed_points_intervals, x):
+                    self.which_to_plot()
+                    self.x = []
+                    self.y = []
+                    x += step
+                    continue
                 if re.search(r'log', self.func) or re.search(r'\(.*?\(?x\)?[+-]?\d*\.?\d*\)+\*\*0.\d+', self.func):
                     if self.analysis_log_sqrt_x(x) == 'False':
                         self.which_to_plot()
