@@ -71,28 +71,28 @@ class Graph:
 
         if '^' in func:
             self.func = self.func.replace('^', '**')
-        self.func = self.func.replace('(x)', 'x')       # усунення різниці де поставлені дужки навколо х, де ні
+        # self.func = self.func.replace('(x)', 'x')       # усунення різниці де поставлені дужки навколо х, де ні
         self.func = self.func.replace('x', '(x)')
         if "|" in self.func:                                    # перетворення модулів на прийнятну для програми функцію
             for m in re.findall(r'\|.*?\|', self.func): # tag(2*x**3+9*(x)**2+9*(x))+(4135+9*x-2*x**2)-tag(6*x+9)
                 self.func = self.func.replace(m, f'abs({m[1:-1]})', 1)
         if 'tan' in self.func:                          # розкладання тангенса на синус/косинус
-            for m in re.findall(r'tan\(.*?\(?x\)?(?:\*\*\d+[+-]\d+\.?\d*\)|\*\*\d+\)|[-+]\d+\.?\d*\)|\))', self.func):
+            for m in re.findall(r'tan\(.*?x(?:\*\*\d+[+-]\d+\.?\d*\)|\*\*\d+\)|[-+]\d+\.?\d*\))', self.func):
                 self.func = self.func.replace(m, f'(sin{m[3:]})/cos{m[3:]}', 1)
         if 'ctg' in self.func:                          # розкладання тангенса на косинус/синус
-            for m in re.findall(r'ctg\(.*?\(?x\)?(?:\*\*\d+[+-]\d+\.?\d*\)|\*\*\d+\)|[-+]\d+\.?\d*\)|\))', self.func):
+            for m in re.findall(r'ctg\(.*?x(?:\*\*\d+[+-]\d+\.?\d*\)|\*\*\d+\)|[-+]\d+\.?\d*\))', self.func):
                 self.func = self.func.replace(m, f'(cos{m[3:]})/sin{m[3:]}', 1)
         if 'log' in self.func:                          # переведення скороченого формату логарифму на зручний програмі
-            for m in re.findall(r'log\(.*?\(?x\)?(?:\*\*\d+[+-]\d+\.?\d*\)|\*\*\d+\)|[-+]\d+\.?\d*\)|\))', self.func):  # для обробки
+            for m in re.findall(r'log\(.*?x(?:\*\*\d+[+-]\d+\.?\d*\)|\*\*\d+\)|[-+]\d+\.?\d*\))', self.func):  # для обробки
                 self.func = self.func.replace(m, f'{m[:-1]}, 2)', 1)
         if 'lg' in self.func:                           # аналогічно
-            for m in re.findall(r'lg\(.*?\(?x\)?(?:\*\*\d+[+-]\d+\.?\d*\)|\*\*\d+\)|[-+]\d+\.?\d*\)|\))', self.func):
+            for m in re.findall(r'lg\(.*?x(?:\*\*\d+[+-]\d+\.?\d*\)|\*\*\d+\)|[-+]\d+\.?\d*\))', self.func):
                 self.func = self.func.replace(m, f'log{m[2:-1]}, 10)', 1)
         if 'ln' in self.func:                           # аналогічно
-            for m in re.findall(r'ln\(.*?\(?x\)?(?:\*\*\d+[+-]\d+\.?\d*\)|\*\*\d+\)|[-+]\d+\.?\d*\)|\))', self.func):
+            for m in re.findall(r'ln\(.*?x(?:\*\*\d+[+-]\d+\.?\d*\)|\*\*\d+\)|[-+]\d+\.?\d*\))', self.func):
                 self.func = self.func.replace(m, f'log{m[2:-1]}, e)', 1)
         if 'sqrt' in self.func:                         # переведення формату в зручний для програми формі, щоб уникнути
-            for m in re.findall(r'sqrt\(.*?\(?x\)?(?:\*\*\d+[+-]\d+\.?\d*\)|\*\*\d+\)|[-+]\d+\.?\d*\)|\))', self.func):     # зайвого повторення тих самих дій
+            for m in re.findall(r'sqrt\(.*?x(?:\*\*\d+[+-]\d+\.?\d*\)|\*\*\d+\)|[-+]\d+\.?\d*\))', self.func):     # зайвого повторення тих самих дій
                 self.func = self.func.replace(m, f'{m[4:]}**0.5', 1)
         # end of initiate func
         self.y = []
@@ -161,7 +161,7 @@ class Graph:
     def arcsin_arccos_points(self):
         allowed_points = []
         if 'asin' in self.func:
-            for m in re.findall(r'asin\(.*?\(?x\)?(?:\*\*\d+[+-]\d+\.?\d*\)|\*\*\d+\)|[-+]\d+\.?\d*\)|\))', self.func):
+            for m in re.findall(r'asin\(.*?\(?x\)?(?:\*\*\d+[+-]\d+\.?\d*\)|\*\*\d+\)|[-+]\d+\.?\d*\))', self.func):
                 m = m[m.find('('):]
                 local_allowed_points = []
                 x0, xn, step = self.first_point, self.last_point, self.step
@@ -172,7 +172,7 @@ class Graph:
                     x0 += step
                 allowed_points.extend(local_allowed_points)
         if 'acos' in self.func:
-            for m in re.findall(r'acos\(.*?\(?x\)?(?:\*\*\d+[+-]\d+\.?\d*\)|\*\*\d+\)|[-+]\d+\.?\d*\)|\))', self.func):
+            for m in re.findall(r'acos\(.*?\(?x\)?(?:\*\*\d+[+-]\d+\.?\d*\)|\*\*\d+\)|[-+]\d+\.?\d*\))', self.func):
                 m = m[m.find('('):]
                 local_allowed_points = []
                 x0, xn, step = self.first_point, self.last_point, self.step
@@ -308,14 +308,15 @@ class Graph:
 
     def analysis_data(self, func: str):                 # аналіз функції перед побудовою, перше це перевірка на наявність дробів з х
         gap_all = []
-        for m in re.findall(r'/\(.*?\(?x\)?(?:\*\*\d+[+-]\d+\.?\d*\)|\*\*\d+\)|[-+]\d+\.?\d*\)|\))', self.func):   # схоже на методи визначення коренів у check_sqrt i check_log
+        for m in re.findall(r'/\(.*?x(?:\)\*\*\d+[+-]\d+\.?\d*\)|\)\*\*\d+\)|\)[-+]\d+\.?\d*\))', self.func):   # схоже на методи визначення коренів у check_sqrt i check_log
             # multipliers_x = []                                                          # тільки тут не проміжки а тільки точки
+            m = m.replace('x', '(x)')
             root_x = find_roots(m)
 
             gap_all.extend(root_x)
         if '/sin' in self.func:                # в синусі і косинусі пошук коренів тільки в межах інтервалу, і тільки для виразів а*х+b
             gap_sin = []
-            for m in re.findall(r'/sin\(.*?\(?x\)?(?:\*\*\d+[+-]\d+\.?\d*\)|\*\*\d+\)|[-+]\d+\.?\d*\)|\))', self.func):
+            for m in re.findall(r'/sin\([+-]?\d*\.?\d*\*?\(x\)[+-]?\d*\.?\d*\)', self.func):
                 if re.search(r'\([+-]?\d*\.?\d*\*?\(x', m):
                     a = float(re.search(r'\([+-]?\d+\.?\d*\*', m).group(0)[1:-1])       # при наявності а, визначає його
                 else:
@@ -334,7 +335,7 @@ class Graph:
 
         if '/cos' in self.func:
             gap_cos = []
-            for m in re.findall(r'/cos\(.*?\(?x\)?(?:\*\*\d+[+-]\d+\.?\d*\)|\*\*\d+\)|[-+]\d+\.?\d*\)|\))', self.func):
+            for m in re.findall(r'/cos\([+-]?\d*\.?\d*\*?\(x\)[+-]?\d*\.?\d*\)', self.func):
                 if re.search(r'\([+-]?\d*\.?\d*\*?\(x', m):
                     a = float(re.search(r'\([+-]?\d+\.?\d*\*', m).group(0)[1:-1])
                 else:
@@ -360,13 +361,13 @@ class Graph:
             arc_flag = True
             allowed_points_intervals = self.arcsin_arccos_points()
 
-        if re.findall(r'/\(.*?\(?x\)?(?:\*\*\d+[+-]\d+\.?\d*\)|\*\*\d+\)|[-+]\d+\.?\d*\)|\))', func)\
+        if re.findall(r'/\(.*?x(?:\)\*\*\d+[+-]\d+\.?\d*\)|\)\*\*\d+\)|\)[-+]\d+\.?\d*\))', func)\
                 or '/sin' in func or '/cos' in func:
             root_point = sorted(self.analysis_data(func))       # при наявності виразів, що вносять розриви, створюється
             root_point = [i for i in root_point if i >= x1]     # масив цих точок, відсіюються ті, що менші першої точки інтервалу
             point = 0
             x = x1
-
+            func = func.replace('x', '(x)')
             while x <= xn:
                 if arc_flag and not self.check_x_by_arc(allowed_points_intervals, x):
                     self.which_to_plot()
@@ -403,6 +404,7 @@ class Graph:
 
         else:       # якщо нема дробів, то визначення на логарифм і вирази з х степеня менше 1 залишається на перевірку
             x = x1
+            func = func.replace('x', '(x)')
             while x <= xn:
                 if arc_flag and not self.check_x_by_arc(allowed_points_intervals, x):
                     self.which_to_plot()
@@ -429,6 +431,8 @@ class Graph:
                 x += step
 
     def draw(self):
+        # self.func = self.func.replace('(x)', 'x')       # усунення різниці де поставлені дужки навколо х, де ні
+        # self.func = self.func.replace('x', '(x)')
         self.calculate_func(self.func, self.first_point, self.last_point, self.step)
         self.which_to_plot()
         if self.type_func != 'r_theta':

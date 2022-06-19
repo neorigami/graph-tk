@@ -10,11 +10,11 @@ def call_analysis():
 
 
 def call():
-    global group_type_graph, group_type_func
+    global group_type_graph, group_type_func, graph_flag
     if not (any(group_type_graph.values()) and any(group_type_func.values())):
         MessageBox.showinfo("Error", "Choose all parameters.")
     else:
-        # global lbl_flag
+
         # if lbl_flag:
         #     global lbl_recommend_first_point, lbl_recommend_last_point, lbl_recommend_step
         #     lbl_recommend_first_point.destroy()
@@ -226,7 +226,6 @@ but_instruction = tk.Button(
 )
 
 # state of press dictionary
-# lbl_flag = False
 group_type_func = {'y_x': 0, 'r_theta': 0}
 group_type_graph = {'scatter': 0, 'line': 0, 'polar': 0}
 state_button = {1: tk.GROOVE, 0: tk.RAISED}
