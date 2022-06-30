@@ -32,8 +32,21 @@ def check_interval(x0, xn, step):               # перевірка на чис
         return True
 
 
+def find_roots_analysis(func, x):
+    root_x = []
+    for i in sympy.solve(func, x):
+        print(i)
+        try:
+            root = eval(str(i))
+            print(root)
+            if isinstance(root, (float, int)):
+                root_x.append(root)
+        except:
+            pass
+    return root_x
+
 def find_roots(func):
-    func = func[1:]
+    # func = func[1:]
     x = sympy.Symbol('x')
     func = eval(func)
     root_x = []
@@ -194,7 +207,6 @@ class Graph:
             i += 1
             next_x = allowed_points[i]
         else:
-            # if allowed_points[i-1] - allowed_points[i] < step*1.1:
             allowed_points_intervals.append([first_x, next_x])
         return allowed_points_intervals
 
@@ -242,34 +254,14 @@ class Graph:
 
             root_points = list(sorted([round(i, self.presicion) for i in roots_x]))
             list_rise_fall = []
-            # if len(root_points) == 1:
-            #     list_rise_fall.append([eval(m[4:m.find(',')].replace('x', str(root_points[0]-1))) > 0, False])
-            #     list_rise_fall.append([eval(m[4:m.find(',')].replace('x', str(root_points[0]+1))) > 0, False])
-            # elif len(root_points) == 0:
-            #     list_rise_fall.append([eval(m[4:m.find(',')].replace('x', '0')) > 0, False])
-            # else:
-            #     for i in range(len(root_points)):
-            #         if i == 0:
-            #             calculate_point = root_points[i] - 1
-            #             list_rise_fall.append([eval(m[4:m.find(',')].replace('x', str(calculate_point))) > 0, False])
-            #             # print(eval(m[4:m.find(',')].replace('x', str(calculate_point))))
-            #         elif i == len(root_points)-1:
-            #             calculate_point = root_points[i] + 1
-            #             list_rise_fall.append([eval(m[4:m.find(',')].replace('x', str(calculate_point))) > 0, False])
-            #             # print(eval(m[4:m.find(',')].replace('x', str(calculate_point))))
-            #             break
-            #         calculate_point = root_points[i] + (root_points[i+1]-root_points[i]) / 2
-            #         list_rise_fall.append([eval(m[4:m.find(',')].replace('x', str(calculate_point))) > 0, False])
             if len(root_points) > 1:
                 for i in range(len(root_points)):
                     if i == 0:
                         calculate_point = root_points[i] - 1
                         list_rise_fall.append([eval(m[4:m.find(',')].replace('x', str(calculate_point))) > 0, False])
-                        # print(eval(m[4:m.find(',')].replace('x', str(calculate_point))))
                     elif i == len(root_points)-1:
                         calculate_point = root_points[i] + 1
                         list_rise_fall.append([eval(m[4:m.find(',')].replace('x', str(calculate_point))) > 0, False])
-                        # print(eval(m[4:m.find(',')].replace('x', str(calculate_point))))
                         break
                     calculate_point = root_points[i] + (root_points[i+1]-root_points[i]) / 2
                     list_rise_fall.append([eval(m[4:m.find(',')].replace('x', str(calculate_point))) > 0, False])
@@ -283,8 +275,6 @@ class Graph:
             return root_points, list_rise_fall, dictionary_rise_fall_plots
 
     def analysis_log_sqrt_x(self, x):                                # тут складно
-        # if not self.root_points:                            # якщо нема коренів то далі умова не приходить і переходить
-        #     return False                                    # до наступної
         if len(self.root_points) == 0:                      # якщо коренів нема
             if not self.list_plus_minus[0][0]:                  # і функція невизначена при будь якому х, то викликається виключення
                 self.error = 'Unresolved expression under log'
@@ -308,10 +298,9 @@ class Graph:
 
     def analysis_data(self, func: str):                 # аналіз функції перед побудовою, перше це перевірка на наявність дробів з х
         gap_all = []
-        for m in re.findall(r'/\(.*?x(?:\)\*\*\d+[+-]\d+\.?\d*\)|\)\*\*\d+\)|\)[-+]\d+\.?\d*\))', self.func):   # схоже на методи визначення коренів у check_sqrt i check_log
-            # multipliers_x = []                                                          # тільки тут не проміжки а тільки точки
+        for m in re.findall(r'/\(.*?x(?:\)\*\*\d+[+-]\d+\.?\d*\)|\)\*\*\d+\)|\)[-+]\d+\.?\d*\))', self.func):   # схоже на методи визначення коренів у check_sqrt i check_log                                                   # тільки тут не проміжки а тільки точки
             m = m.replace('x', '(x)')
-            root_x = find_roots(m)
+            root_x = find_roots(m[1:])
 
             gap_all.extend(root_x)
         if '/sin' in self.func:                # в синусі і косинусі пошук коренів тільки в межах інтервалу, і тільки для виразів а*х+b

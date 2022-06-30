@@ -15,13 +15,6 @@ def call():
         MessageBox.showinfo("Error", "Choose all parameters.")
     else:
 
-        # if lbl_flag:
-        #     global lbl_recommend_first_point, lbl_recommend_last_point, lbl_recommend_step
-        #     lbl_recommend_first_point.destroy()
-        #     lbl_recommend_last_point.destroy()
-        #     lbl_recommend_step.destroy()
-        #     lbl_flag = False
-        # try:
 
         graph_func = graph.Graph(func_entry.get(),
                                     list(({k: v for k, v in group_type_func.items() if v == 1}).keys())[0],
@@ -51,17 +44,6 @@ def check_state(group, key):
     else:
         group[key] = 1
         return group
-
-# def x_y():
-#     global group_type_func
-#     group_type_func = check_state(group_type_func, 'x_y')
-#     func_func.config(text='x(y)=')
-#     but_x_y.config(relief=state_button[group_type_func['x_y']])
-#     but_y_x.config(relief=state_button[group_type_func['y_x']])
-#     but_polar.config(relief=state_button[group_type_func['r_theta']])
-#     but_scat.config(state='normal')
-#     but_line.config(state='normal')
-#     but_anal.config(state='normal')
 
 
 def y_x():
@@ -111,42 +93,34 @@ def line():
 
 
 def show_instruction():
-    # instruction_window = tk.Tk()
-    # frm_for_instr = tk.Frame(master=instruction_window)
-    # lbl_instr_1 = tk.Label(master=frm_for_instr, justify='left', text='Інструкція заповнення поля функції')
-    # lbl_instr_2 = tk.Label(master=frm_for_instr, justify='left',
-    #                        text='1. Допустимі вирази запису логарифмів: log-, lg-, ln-, log(a*x^n...+c, base).\n'
-    #                             ' Недопускати запис х без множника, якщо він не 0 ')
-    # lbl_instr_3 = tk.Label(master=frm_for_instr, justify='left',
-    #                        text='2. Допустимі вирази для запису тригонометричних виразів: sin(a*x+b), cos(a*x+b), tan(a*x+b), ctg(a*x+b), \n'
-    #                             'acosh(a*x^n...+c), asinh(a*x^n...+c), atanh(a*x^n...+c), tanh(a*x^n...+c)')
-    # lbl_instr_4 = tk.Label(master=frm_for_instr, justify='left',
-    #                        text='3. Скорочувати всі множники х однакових степенів, вводити члени виразу ,\n'
-    #                             'функції в знаменнику дробу, логарифму, виразу зі змінною під степенем <1 в порядку спадання степеня х')
-    # lbl_instr_5 = tk.Label(master=frm_for_instr, justify='left',
-    #                        text='4. Недопускати пробіли, записувати всю функцію без пробілів')
-    # lbl_instr_6 = tk.Label(master=frm_for_instr, justify='left',
-    #                        text='5. Не записувати під логарифмами дроби з х, під дробами логарифми під х,\n'
-    #                             ' під логарифмами з х інші логарифми з х, аналогічно з дробами.')
-    # lbl_instr_7 = tk.Label(master=frm_for_instr, justify='left',
-    #                        text='6. Не ускладнювати функцію, не провокувати виникнення комплексних коренів')
-    # frm_for_instr.grid(row=0, column=1, pady=2)
-    # lbl_instr_1.grid(row=0, column=0, sticky='w', pady=2)
-    # lbl_instr_2.grid(row=1, column=0, sticky='w', pady=2)
-    # lbl_instr_3.grid(row=2, column=0, sticky='w', pady=2)
-    # lbl_instr_4.grid(row=3, column=0, sticky='w', pady=2)
-    # lbl_instr_5.grid(row=4, column=0, sticky='w', pady=2)
-    # lbl_instr_6.grid(row=5, column=0, sticky='w', pady=2)
-    # lbl_instr_7.grid(row=6, column=0, sticky='w', pady=2)
-    # instruction_window.mainloop()
     instruction_window = tk.Tk()
-    canvas = tk.Canvas(master=instruction_window, height=700, width=1000)
-    # image = Image.open("loudly-crying-face_1f62d.png")
-    image = tk.PhotoImage(master=instruction_window, file="loudly-crying-face_1f62d.png")
-    canvas.pack(fill='both')
-    canvas.create_image(0, 0, anchor='nw', image=image)
-    # tk.Label(master=instruction_window, image=image).pack()
-    # canvas.grid(row=0, column=0)
+    frm_for_instr = tk.Frame(master=instruction_window)
+    lbl_instr_1 = tk.Label(master=frm_for_instr, justify='left', text='Інструкція заповнення поля функції')
+    lbl_instr_2 = tk.Label(master=frm_for_instr, justify='left',
+                           text='1. Допустимі вирази запису логарифмів: log-, lg-, ln-, log(a*x^n...+c, base).\n'
+                                ' Недопускати запис х без множника, якщо він не 0 ')
+    lbl_instr_3 = tk.Label(master=frm_for_instr, justify='left',
+                           text='2. Допустимі вирази для запису тригонометричних виразів: sin(a*x+b), cos(a*x+b), tan(a*x+b), ctg(a*x+b), \n'
+                                'acosh(a*x^n...+c), asinh(a*x^n...+c), atanh(a*x^n...+c), tanh(a*x^n...+c)')
+    lbl_instr_4 = tk.Label(master=frm_for_instr, justify='left',
+                           text='3. Скорочувати всі множники х однакових степенів, вводити члени виразу ,\n'
+                                'функції в знаменнику дробу, логарифму, виразу зі змінною під степенем <1 в порядку спадання степеня х')
+    lbl_instr_5 = tk.Label(master=frm_for_instr, justify='left',
+                           text='4. Недопускати пробіли, записувати всю функцію без пробілів')
+    lbl_instr_6 = tk.Label(master=frm_for_instr, justify='left',
+                           text='5. Не записувати під логарифмами дроби з х, під дробами логарифми під х,\n'
+                                ' під логарифмами з х інші логарифми з х, аналогічно з дробами.')
+    lbl_instr_7 = tk.Label(master=frm_for_instr, justify='left',
+                           text='6. Дроби, тангенси так котангенси, логарифми, sqrt чи вирази з степенями менше 0 -\n'
+                                'Якщо число с відсутнє, то замість нього записуйте +0')
+    frm_for_instr.grid(row=0, column=1, pady=2)
+    lbl_instr_1.grid(row=0, column=0, sticky='w', pady=2)
+    lbl_instr_2.grid(row=1, column=0, sticky='w', pady=2)
+    lbl_instr_3.grid(row=2, column=0, sticky='w', pady=2)
+    lbl_instr_4.grid(row=3, column=0, sticky='w', pady=2)
+    lbl_instr_5.grid(row=4, column=0, sticky='w', pady=2)
+    lbl_instr_6.grid(row=5, column=0, sticky='w', pady=2)
+    lbl_instr_7.grid(row=6, column=0, sticky='w', pady=2)
     instruction_window.mainloop()
 
 
@@ -155,9 +129,7 @@ window.title("Graph")
 window.rowconfigure(0, minsize=200, weight=1)
 window.columnconfigure(1, minsize=200, weight=1)
 window.resizable(width=False, height=False)
-# func_frame = tk.Frame(master=window, height=50)
-# func_entry = tk.Entry(master=func_frame, width=50)
-# func_label = tk.Label(master=func_frame, text="Put function")
+
 
 func_entry = tk.Entry(master=window, width=50)
 func_label = tk.Label(master=window, text="Put function")
@@ -170,11 +142,7 @@ but_y_x = tk.Button(
     command=y_x,
     relief=tk.RAISED
 )
-# but_x_y = tk.Button(
-#     master=window,
-#     text="x(y)=y",
-#     command=x_y
-# )
+
 but_polar = tk.Button(
     master=window,
     text='Polar',
@@ -230,14 +198,12 @@ group_type_func = {'y_x': 0, 'r_theta': 0}
 group_type_graph = {'scatter': 0, 'line': 0, 'polar': 0}
 state_button = {1: tk.GROOVE, 0: tk.RAISED}
 
-
 but_instruction.grid(row=0, column=2, sticky='w')
 func_label.grid(row=1, column=1, sticky='s')
 func_entry.grid(row=2, column=1, sticky='w')
 func_func.grid(row=2, column=0, sticky='e')
 lbl_type_func.grid(row=3, column=1, padx=10, pady=5)
 but_y_x.grid(row=4, column=0, padx=10, sticky='e')
-# but_x_y.grid(row=4, column=1, padx=10)
 but_polar.grid(row=4, column=2, padx=10, sticky='w')
 lbl_type_graph.grid(row=5, column=1, padx=10, pady=5)
 but_line.grid(row=6, column=0, padx=10, sticky='e')
